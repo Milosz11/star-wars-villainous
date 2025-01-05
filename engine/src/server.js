@@ -3,9 +3,6 @@ const app = express();
 const port = 3000;
 
 const gameRouter = require("../controllers/gameController");
-const homeRouter = require("../controllers/homeController");
-
-app.use("/", homeRouter);
 
 app.use("/game", gameRouter);
 
