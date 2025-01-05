@@ -9,7 +9,9 @@ function SelectableMenu({ items, onSelectItem }: Props) {
     const [selectedIndex, setSelectedIndex] = useState(-1);
 
     useEffect(() => {
-        onSelectItem(items[selectedIndex]);
+        if (selectedIndex >= 0) {
+            onSelectItem(items[selectedIndex]);
+        }
     }, [items]);
 
     return (
