@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface Props {
     items: string[];
@@ -7,6 +7,10 @@ interface Props {
 
 function SelectableMenu({ items, onSelectItem }: Props) {
     const [selectedIndex, setSelectedIndex] = useState(-1);
+
+    useEffect(() => {
+        onSelectItem(items[selectedIndex]);
+    }, [items]);
 
     return (
         <>
