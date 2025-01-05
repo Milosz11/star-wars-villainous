@@ -3,7 +3,12 @@
     text-align: center;
 }
 
-.startMenu {
-    max-width: 30%;
-    margin: 4% auto 0;
+.contentArea {
+    max-width: 24rem;
+    margin: 4rem auto 0;
+}
+
+.contentAreaWide {
+    max-width: 48rem;
+    margin: 4rem auto 0;
 }
