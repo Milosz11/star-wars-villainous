@@ -1,34 +1,26 @@
-import { useState } from 'react'
-
-import './App.css'
-import ExpandableGroup from './components/ExpandableGroup'
+import Header from "./components/Header";
+import StartMenu from "./components/StartMenu";
+import "./App.css";
 
 function App() {
-    const heading = 'Droid army'
-    const cards = [
-        'B-X Commando Droids',
-        'Magna Guards',
-        'B-2 Super Battle Droids',
-        'B-1 Battle Droids',
-        'Droidekas',
-    ]
+    const title = "Star Wars Villainous";
+    const imagePath = "../../logo.jpg";
 
-    const [count, setCount] = useState(0)
+    const villains = ["Moff Gideon", "General Grievous", "Darth Vader"];
 
     return (
         <>
-            <div>
-                <h1>Hello there General Kenobi</h1>
+            <Header title={title} imagePath={imagePath} />
+            <div className="startMenu">
+                <StartMenu
+                    villains={villains}
+                    onStartButtonClick={(playerVillain, opponentVillain) => {
+                        console.log(playerVillain + ", " + opponentVillain);
+                    }}
+                />
             </div>
-            <div>
-                <h4>count is {count}</h4>
-                <button className='btn btn-primary' onClick={() => setCount(count => count + 1)}>
-                    Primary Button
-                </button>
-            </div>
-            <ExpandableGroup heading={heading} cards={cards} />
         </>
-    )
+    );
 }
 
-export default App
+export default App;
