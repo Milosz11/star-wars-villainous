@@ -1,15 +1,25 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import SelectableMenu from "../components/SelectableMenu";
 
 function NewGame() {
-    const villains = ["Moff Gideon", "General Grievous", "Darth Vader"];
+    const [villains, setVillains] = useState([]);
 
     const [selectedPlayerVillain, setSelectedPlayerVillain] = useState("");
     const [selectedOpponentVillain, setOpponentVillain] = useState("");
 
     const opponentMenuShown = selectedPlayerVillain != "";
     const startButtonDisabled = selectedPlayerVillain == "" || selectedOpponentVillain == "";
+
+    useEffect(() => {
+        const fetchData = async () => {
+            const url = "http://localhost:3000/game/game-settings";
+            const response = await fetch(url);
+            const settings = await response.json();
+            setVillains(settings["availableVillains"]);
+        };
+        fetchData();
+    }, []);
 
     return (
         <div className="contentArea">
