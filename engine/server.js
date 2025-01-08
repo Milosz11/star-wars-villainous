@@ -9,7 +9,7 @@ app.use(
     })
 );
 
-const gameRouter = require("../controllers/game-controller");
+const gameRouter = require("./controllers/game-controller");
 
 app.use("/game", gameRouter);
 
