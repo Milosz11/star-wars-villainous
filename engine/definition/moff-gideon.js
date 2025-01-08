@@ -85,7 +85,7 @@ module.exports = {
             "name": "Outland TIE Fighter",
         },
     ],
-    "hero-deck": [
+    "fate-deck": [
         {
             "count": 1,
             "name": "The Mandalorian",
