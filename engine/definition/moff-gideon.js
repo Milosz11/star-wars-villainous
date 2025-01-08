@@ -1,4 +1,4 @@
-export default {
+module.exports = {
     "villain-name": "Moff Gideon",
     "objective": "Capture and experiment on Grogu.",
     "locations": [
