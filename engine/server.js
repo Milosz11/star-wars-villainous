@@ -14,5 +14,5 @@ const gameRouter = require("./controllers/game-controller");
 app.use("/game", gameRouter);
 
 app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`);
+    console.log(`Star Wars Villainous engine running on port ${port}`);
 });
