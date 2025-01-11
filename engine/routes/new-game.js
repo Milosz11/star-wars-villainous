@@ -1,4 +1,5 @@
 const fs = require("node:fs");
+const { instantiateStartingBoardState } = require("../src/construct");
 
 module.exports = (req, res) => {
     try {
@@ -22,7 +23,6 @@ module.exports = (req, res) => {
         // Array has a bad value (a string not matching any Villain one can play)
         for (const v of reqVillains) {
             if (!availableVillains.includes(v)) {
-                console.log(v);
                 res.status(400).json({ error: "Bad values in array 'availableVillains'" });
                 return;
             }
@@ -47,7 +47,7 @@ module.exports = (req, res) => {
             return;
         }
 
-        res.status(200).json({ success: req.body });
+        res.status(200).json({ success: instantiateStartingBoardState(reqVillains) });
     } catch (err) {
         console.log(err);
         res.status(500).json({ error: err });
