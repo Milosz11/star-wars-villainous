@@ -1,7 +1,7 @@
 const fs = require("node:fs");
 const { getVillainDefinition, getCardDefinition } = require("../definitions/definition-loader");
 
-function instantiateStartingBoardState(villainNames) {
+function instantiateStartingBoardState(...villainNames) {
     if (villainNames.length < 2 || villainNames.length > 2) {
         throw new Error("Improper length of villain names");
     }
@@ -14,6 +14,11 @@ function instantiateStartingBoardState(villainNames) {
         if (!availableVillains.includes(v)) {
             throw new Error("Bad villain name value");
         }
+    }
+
+    const duplicates = villainNames.filter((v, index) => villainNames.indexOf(v) !== index);
+    if (duplicates.length > 0) {
+        throw new Error("Duplicate villain names passed");
     }
 
     // For each villain, create a unique player id and associate with their
