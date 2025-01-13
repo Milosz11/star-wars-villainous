@@ -47,7 +47,7 @@ module.exports = (req, res) => {
             return;
         }
 
-        res.status(200).json({ success: instantiateStartingBoardState(reqVillains) });
+        res.status(200).json({ success: instantiateStartingBoardState(...reqVillains) });
     } catch (err) {
         console.log(err);
         res.status(500).json({ error: err });
