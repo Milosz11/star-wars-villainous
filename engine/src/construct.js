@@ -1,6 +1,29 @@
 const fs = require("node:fs");
 const { getVillainDefinition, getCardDefinition } = require("../definitions/definition-loader");
 
+/**
+ * Shorthand for quickly constructing states for testing.
+ * @param {any[]} villainsOrVillainNames A list containing strings of villain names or object
+ * definitions of those villains.
+ *
+ * In the case of a string, the villain will be created from their default definition with their
+ * decks shuffled, but will not have their credit amounts altered.
+ *
+ * In the case of an object, the key 'villain-name' is required. The keys 'hand', 'villain-deck',
+ * 'villain-discard-pile', 'fate-deck', and 'fate-discard-pile' use the string shorthand.
+ * This means they take a string list of the names of the desired cards. Any key not used will be
+ * an empty list. The membership of each card is not checked, so if a card gets inserted into the
+ * wrong deck, undefined behavior results. The key 'locations' takes an object of keys representing
+ * that villain's locations to overwrite from the defaults. Each value is on object containing keys
+ * 'villain-side-cards' and 'hero-side-cards'. These keys associate to lists of strings of card names
+ * that should be at that location.
+ *
+ * If less than the minimum number of required villains is provided. Default ones will be used.
+ * These get instantiated the same way as if they were provided with the shorthand method.
+ * @return the instantiated board state
+ */
+function instantiateCustomBoardState(...villainsOrVillainNames) {}
+
 function instantiateStartingBoardState(...villainNames) {
     if (villainNames.length < 2 || villainNames.length > 2) {
         throw new Error("Improper length of villain names");
@@ -99,4 +122,4 @@ function getLiveCardTypeKvs(cardType) {
     }
 }
 
-module.exports = { instantiateStartingBoardState };
+module.exports = { instantiateStartingBoardState, instantiateCustomBoardState };
