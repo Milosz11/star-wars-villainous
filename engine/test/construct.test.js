@@ -1,5 +1,5 @@
 const fs = require("node:fs");
-const { instantiateStartingBoardState } = require("../src/construct");
+const { instantiateStartingBoardState, instantiateCustomBoardState } = require("../src/construct");
 
 const data = fs.readFileSync("game-settings.json", "utf-8");
 const settings = JSON.parse(data);
@@ -111,5 +111,204 @@ describe("instantiateStartingBoardState properly constructs initial game board",
 
         expect(filteredHeroCard).not.toHaveProperty("attached-cards", expect.any(Array));
         expect(filteredHeroCard).not.toHaveProperty("additional-strength", expect.any(Number));
+    });
+});
+
+describe("instantiateCustomBoardState throws Error on invalid arguments", () => {
+    it("more than 2 villains provided", () => {
+        expect(
+            instantiateCustomBoardState("Moff Gideon", "General Grievous", "Darth Vader")
+        ).toThrow("Too many arguments provided");
+    });
+
+    it("wrong types", () => {
+        expect(instantiateCustomBoardState("Moff Gideon", 0)).toThrow("Invalid arguments provided");
+    });
+
+    it("bad villain name", () => {
+        expect(instantiateCustomBoardState("Moff")).toThrow("Invalid arguments provided");
+    });
+
+    it("villain object definition does not have 'villain-name' key", () => {
+        expect(instantiateCustomBoardState({ "ambition": 3 })).toThrow(
+            "Key 'villain-name' not provided with villain definition"
+        );
+    });
+
+    it("non-existent card given to a villain", () => {
+        expect(
+            instantiateCustomBoardState({
+                "villain-name": "Moff Gideon",
+                "villain-deck": ["Hello There"],
+            })
+        ).toThrow("Non-existent cards provided");
+    });
+
+    it("non-existent location specified", () => {
+        expect(
+            instantiateCustomBoardState({
+                "villain-name": "Moff Gideon",
+                "locations": {
+                    "not a real place": {
+                        "villain-side-cards": ["Dark Troopers"],
+                    },
+                },
+            })
+        ).toThrow("Non-existent location specified");
+    });
+
+    it("non-existent card given in location", () => {
+        expect(
+            instantiateCustomBoardState({
+                "villain-name": "Moff Gideon",
+                "locations": {
+                    "Nevarro City": {
+                        "villain-side-cards": ["It's Over Anakin"],
+                    },
+                },
+            })
+        ).toThrow("Non-existent cards provided");
+    });
+});
+
+describe("instantiateCustomBoardState correctly instantiates using string shorthand", () => {
+    const villain = instantiateCustomBoardState("Moff Gideon")["sectors"]["p1"];
+
+    it("credit amounts are not altered", () => {
+        expect(villain["credits"]).toBe(0);
+    });
+
+    it("villain gets a full villain and fate deck", () => {
+        expect(villain["villain-deck"]).toHaveLength(30);
+        expect(villain["fate-deck"]).toHaveLength(15);
+    });
+
+    it.todo("decks are shuffled");
+});
+
+describe("instantiateCustomBoardState nonspecified villains are treated the same as shorthand", () => {
+    const villain = instantiateCustomBoardState("General Grievous")["sectors"]["p2"];
+
+    it("credit amounts are not altered", () => {
+        expect(villain["credits"]).toBe(0);
+    });
+
+    it("villain gets a full villain and fate deck", () => {
+        expect(villain["villain-deck"]).toHaveLength(30);
+        expect(villain["fate-deck"]).toHaveLength(15);
+    });
+
+    it.todo("decks are shuffled");
+});
+
+describe("instantiateCustomBoardState correctly instantiates given custom villain definitions", () => {
+    it.todo("string and object are treated the same");
+
+    it("credit amounts are not altered", () => {
+        const board = instantiateCustomBoardState({ "villain-name": "Moff Gideon" });
+
+        expect(board["sectors"]["p1"]["credits"]).toBe(0);
+    });
+
+    it("a key is set if passed (credits are set explicitly)", () => {
+        const board = instantiateCustomBoardState({ "villain-name": "Moff Gideon", "credits": 3 });
+
+        expect(board["sectors"]["p1"]["credits"]).toBe(3);
+    });
+
+    it("villain's decks are empty", () => {
+        const board = instantiateCustomBoardState({ "villain-name": "Moff Gideon", "credits": 3 });
+        const villain = board["sectors"]["p1"];
+
+        expect(villain["villain-deck"]).toHaveLength(0);
+        expect(villain["villain-discard-pile"]).toHaveLength(0);
+        expect(villain["fate-deck"]).toHaveLength(0);
+        expect(villain["fate-discard-pile"]).toHaveLength(0);
+        expect(villain["hand"]).toHaveLength(0);
+    });
+});
+
+describe("instantiateCustomBoardState correctly uses shorthand for cards", () => {
+    it("villains' decks contain only what was passed 1", () => {
+        const board = instantiateCustomBoardState({
+            "villain-name": "Moff Gideon",
+            "villain-deck": ["The Client"],
+        });
+        const villain = board["sectors"]["p1"];
+
+        expect(villain["villain-deck"]).toHaveLength(1);
+        expect(villain["villain-discard-pile"]).toHaveLength(0);
+        expect(villain["fate-deck"]).toHaveLength(0);
+        expect(villain["fate-discard-pile"]).toHaveLength(0);
+        expect(villain["hand"]).toHaveLength(0);
+    });
+
+    it("villains' decks contain only what was passed 2", () => {
+        const board = instantiateCustomBoardState({
+            "villain-name": "Moff Gideon",
+            "villain-deck": ["The Client", "Dark Troopers"],
+            "villain-discard-pile": ["Death Troopers"],
+            "fate-deck": ["The Mandalorian"],
+            "hand": ["Death Troopers", "Stormtroopers"],
+        });
+        const villain = board["sectors"]["p1"];
+
+        expect(villain["villain-deck"]).toHaveLength(2);
+        expect(villain["villain-discard-pile"]).toHaveLength(1);
+        expect(villain["fate-deck"]).toHaveLength(1);
+        expect(villain["fate-discard-pile"]).toHaveLength(0);
+        expect(villain["hand"]).toHaveLength(2);
+    });
+
+    it("shorthand properly creates a card from definition", () => {
+        const board = instantiateCustomBoardState({
+            "villain-name": "Moff Gideon",
+            "hand": ["Death Troopers", "Darksaber"],
+        });
+        const villain = board["sectors"]["p1"];
+
+        expect(villain["hand"][0]).toHaveProperty("name", "Dark Troopers");
+        expect(villain["hand"][0]).toHaveProperty("card-type", "Ally");
+        expect(villain["hand"][0]).toHaveProperty("strength", 5);
+        expect(villain["hand"][1]).toHaveProperty("name", "Darksaber");
+        expect(villain["hand"][1]).toHaveProperty("card-type", "Item");
+    });
+});
+
+describe("instantiateCustomBoardState properly creates locations", () => {
+    it("location has cards added to it", () => {
+        const board = instantiateCustomBoardState({
+            "villain-name": "Moff Gideon",
+            "locations": {
+                "The Bridge": {
+                    "villain-side-cards": ["Dark Troopers"],
+                    "hero-side-cards": ["The Mandalorian", "Bo-Katan Kryze"],
+                },
+            },
+        });
+        const theBridge = board["sectors"]["p1"]["locations"]["The Bridge"];
+
+        expect(theBridge["villain-side-cards"]).toHaveLength(1);
+        expect(theBridge["hero-side-cards"]).toHaveLength(2);
+    });
+
+    it("cards at location are instaniated", () => {
+        const board = instantiateCustomBoardState({
+            "villain-name": "Moff Gideon",
+            "locations": {
+                "The Bridge": {
+                    "villain-side-cards": ["Dark Troopers"],
+                    "hero-side-cards": ["The Mandalorian", "Bo-Katan Kryze"],
+                },
+            },
+        });
+        const theBridge = board["sectors"]["p1"]["locations"]["The Bridge"];
+
+        expect(theBridge["villain-side-cards"][0]).toHaveProperty("name", "Dark Troopers");
+        expect(theBridge["villain-side-cards"][0]).toHaveProperty("card-type", "Ally");
+        expect(theBridge["hero-side-cards"][0]).toHaveProperty("name", "The Mandalorian");
+        expect(theBridge["hero-side-cards"][0]).toHaveProperty("card-type", "Hero");
+        expect(theBridge["hero-side-cards"][1]).toHaveProperty("name", "Bo-Katan Kryze");
+        expect(theBridge["hero-side-cards"][1]).toHaveProperty("strength", 3);
     });
 });
