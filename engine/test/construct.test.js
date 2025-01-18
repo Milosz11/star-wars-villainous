@@ -116,36 +116,58 @@ describe("instantiateStartingBoardState properly constructs initial game board",
 
 describe("instantiateCustomBoardState throws Error on invalid arguments", () => {
     it("more than 2 villains provided", () => {
-        expect(
-            instantiateCustomBoardState("Moff Gideon", "General Grievous", "Darth Vader")
-        ).toThrow("Too many arguments provided");
+        expect(() => {
+            instantiateCustomBoardState("Moff Gideon", "General Grievous", "Darth Vader");
+        }).toThrow("Too many arguments provided");
     });
 
     it("wrong types", () => {
-        expect(instantiateCustomBoardState("Moff Gideon", 0)).toThrow("Invalid arguments provided");
+        expect(() => {
+            instantiateCustomBoardState("Moff Gideon", 0);
+        }).toThrow("Invalid arguments provided");
     });
 
     it("bad villain name", () => {
-        expect(instantiateCustomBoardState("Moff")).toThrow("Invalid arguments provided");
+        expect(() => {
+            instantiateCustomBoardState("Moff");
+        }).toThrow("Invalid arguments provided");
     });
 
     it("villain object definition does not have 'villain-name' key", () => {
-        expect(instantiateCustomBoardState({ "ambition": 3 })).toThrow(
-            "Key 'villain-name' not provided with villain definition"
-        );
+        expect(() => {
+            instantiateCustomBoardState({ "ambition": 3 });
+        }).toThrow("Key 'villain-name' not provided with villain definition");
+    });
+
+    it("'villain-name' key has invalid villain name", () => {
+        expect(() => {
+            instantiateCustomBoardState({ "villain-name": "Revan" });
+        }).toThrow("Key 'villain-name' has invalid villain name");
+    });
+
+    it("duplicate villains provided 1", () => {
+        expect(() => {
+            instantiateCustomBoardState("Moff Gideon", "Moff Gideon");
+        }).toThrow("Duplicate villain names passed");
+    });
+
+    it("duplicate villains provided 2", () => {
+        expect(() => {
+            instantiateCustomBoardState("Moff Gideon", { "villain-name": "Moff Gideon" });
+        }).toThrow("Duplicate villain names passed");
     });
 
     it("non-existent card given to a villain", () => {
-        expect(
+        expect(() => {
             instantiateCustomBoardState({
                 "villain-name": "Moff Gideon",
                 "villain-deck": ["Hello There"],
-            })
-        ).toThrow("Non-existent cards provided");
+            });
+        }).toThrow("Non-existent cards provided");
     });
 
     it("non-existent location specified", () => {
-        expect(
+        expect(() => {
             instantiateCustomBoardState({
                 "villain-name": "Moff Gideon",
                 "locations": {
@@ -153,12 +175,12 @@ describe("instantiateCustomBoardState throws Error on invalid arguments", () => 
                         "villain-side-cards": ["Dark Troopers"],
                     },
                 },
-            })
-        ).toThrow("Non-existent location specified");
+            });
+        }).toThrow("Non-existent location specified");
     });
 
     it("non-existent card given in location", () => {
-        expect(
+        expect(() => {
             instantiateCustomBoardState({
                 "villain-name": "Moff Gideon",
                 "locations": {
@@ -166,8 +188,8 @@ describe("instantiateCustomBoardState throws Error on invalid arguments", () => 
                         "villain-side-cards": ["It's Over Anakin"],
                     },
                 },
-            })
-        ).toThrow("Non-existent cards provided");
+            });
+        }).toThrow("Non-existent cards provided");
     });
 });
 
@@ -183,6 +205,8 @@ describe("instantiateCustomBoardState correctly instantiates using string shorth
         expect(villain["fate-deck"]).toHaveLength(15);
     });
 
+    it.todo("every card has a unique id");
+
     it.todo("decks are shuffled");
 });
 
@@ -197,6 +221,8 @@ describe("instantiateCustomBoardState nonspecified villains are treated the same
         expect(villain["villain-deck"]).toHaveLength(30);
         expect(villain["fate-deck"]).toHaveLength(15);
     });
+
+    it.todo("every card has a unique id");
 
     it.todo("decks are shuffled");
 });
@@ -226,6 +252,8 @@ describe("instantiateCustomBoardState correctly instantiates given custom villai
         expect(villain["fate-discard-pile"]).toHaveLength(0);
         expect(villain["hand"]).toHaveLength(0);
     });
+
+    it.todo("every card has a unique id");
 });
 
 describe("instantiateCustomBoardState correctly uses shorthand for cards", () => {
@@ -263,7 +291,7 @@ describe("instantiateCustomBoardState correctly uses shorthand for cards", () =>
     it("shorthand properly creates a card from definition", () => {
         const board = instantiateCustomBoardState({
             "villain-name": "Moff Gideon",
-            "hand": ["Death Troopers", "Darksaber"],
+            "hand": ["Dark Troopers", "Darksaber"],
         });
         const villain = board["sectors"]["p1"];
 
@@ -286,7 +314,9 @@ describe("instantiateCustomBoardState properly creates locations", () => {
                 },
             },
         });
-        const theBridge = board["sectors"]["p1"]["locations"]["The Bridge"];
+        const theBridge = board["sectors"]["p1"]["locations"].find((loc) => {
+            return loc["name"] == "The Bridge";
+        });
 
         expect(theBridge["villain-side-cards"]).toHaveLength(1);
         expect(theBridge["hero-side-cards"]).toHaveLength(2);
@@ -302,7 +332,9 @@ describe("instantiateCustomBoardState properly creates locations", () => {
                 },
             },
         });
-        const theBridge = board["sectors"]["p1"]["locations"]["The Bridge"];
+        const theBridge = board["sectors"]["p1"]["locations"].find((loc) => {
+            return loc["name"] == "The Bridge";
+        });
 
         expect(theBridge["villain-side-cards"][0]).toHaveProperty("name", "Dark Troopers");
         expect(theBridge["villain-side-cards"][0]).toHaveProperty("card-type", "Ally");
