@@ -157,6 +157,16 @@ describe("instantiateCustomBoardState throws Error on invalid arguments", () => 
         }).toThrow("Duplicate villain names passed");
     });
 
+    it("bad type for a key like ambition", () => {
+        expect(() => {
+            instantiateCustomBoardState({
+                "villain-name": "Moff Gideon",
+                "ambition": "3",
+                "villain-deck": ["Hello There"],
+            });
+        }).toThrow("Passed keys have bad type");
+    });
+
     it("non-existent card given to a villain", () => {
         expect(() => {
             instantiateCustomBoardState({
