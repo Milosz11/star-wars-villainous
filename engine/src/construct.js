@@ -16,7 +16,8 @@ const { getVillainDefinition, getCardDefinition } = require("../definitions/defi
  * wrong deck, undefined behavior results. The key 'locations' takes an object of keys representing
  * that villain's locations to overwrite from the defaults. Each value is an object containing keys
  * 'villain-side-cards' and 'hero-side-cards'. These keys associate to lists of strings of card names
- * that should be at that location.
+ * that should be at that location. Any other key, like 'ambition', is set as passed and throws
+ * error on improper types. Any key that doesn't exist in the board state in ignored.
  *
  * If less than the minimum number of required villains is provided. Default ones will be used.
  * These get instantiated the same way as if they were provided with the shorthand method.
@@ -118,6 +119,9 @@ function instantiateCustomVillain(villainDefinition) {
     // Assign non-deck (nor villain name and objective) game board keys
     ["villain-mover-position", "ambition", "credits"].forEach((key) => {
         if (villainDefinition[key]) {
+            if (!Number.isInteger(villainDefinition[key])) {
+                throw new Error("Passed keys have bad type");
+            }
             villainToReturn[[key]] = villainDefinition[key];
         }
     });
