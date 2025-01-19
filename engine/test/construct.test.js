@@ -1,9 +1,6 @@
-const fs = require("node:fs");
 const { instantiateStartingBoardState, instantiateCustomBoardState } = require("../src/construct");
 
-const data = fs.readFileSync("game-settings.json", "utf-8");
-const settings = JSON.parse(data);
-const availableVillains = settings["availableVillains"];
+const availableVillains = ["Moff Gideon", "General Grievous", "Darth Vader"];
 
 describe("instantiateStartingBoardState throws Error on bad input", () => {
     it("when invalid argument is passed", () => {
@@ -113,6 +110,19 @@ describe("instantiateStartingBoardState properly constructs initial game board",
         expect(filteredHeroCard).not.toHaveProperty("additional-strength", expect.any(Number));
     });
 
+    it("every villain has a unique player id", () => {
+        const playerIdKeys = Object.keys(board["sectors"]);
+        const playerIdsInVillains = Object.values(board["sectors"]).map(
+            (sector) => sector["player-id"]
+        );
+        const playerIdKeysSet = new Set(playerIdKeys);
+        const playerIdsInVillainsSet = new Set(playerIdsInVillains);
+
+        expect(playerIdKeysSet.size).toEqual(2);
+        expect(playerIdsInVillainsSet.size).toEqual(2);
+        expect(playerIdKeys).toEqual(playerIdsInVillains);
+    });
+
     it.todo("every card has a unique id");
 });
 
@@ -206,7 +216,8 @@ describe("instantiateCustomBoardState throws Error on invalid arguments", () => 
 });
 
 describe("instantiateCustomBoardState correctly instantiates using string shorthand", () => {
-    const villain = instantiateCustomBoardState("Moff Gideon")["sectors"]["p1"];
+    const board = instantiateCustomBoardState("Moff Gideon");
+    const villain = board["sectors"]["p1"];
 
     it("credit amounts are not altered", () => {
         expect(villain["credits"]).toBe(0);
@@ -217,9 +228,18 @@ describe("instantiateCustomBoardState correctly instantiates using string shorth
         expect(villain["fate-deck"]).toHaveLength(15);
     });
 
-    it.todo("every card has a unique id");
+    it("every villain has a unique player id", () => {
+        const playerIdKeys = Object.keys(board["sectors"]);
+        const playerIdsInVillains = Object.values(board["sectors"]).map(
+            (sector) => sector["player-id"]
+        );
+        const playerIdKeysSet = new Set(playerIdKeys);
+        const playerIdsInVillainsSet = new Set(playerIdsInVillains);
 
-    it.todo("decks are shuffled");
+        expect(playerIdKeysSet.size).toEqual(2);
+        expect(playerIdsInVillainsSet.size).toEqual(2);
+        expect(playerIdKeys).toEqual(playerIdsInVillains);
+    });
 });
 
 describe("instantiateCustomBoardState nonspecified villains are treated the same as shorthand", () => {
@@ -233,15 +253,9 @@ describe("instantiateCustomBoardState nonspecified villains are treated the same
         expect(villain["villain-deck"]).toHaveLength(30);
         expect(villain["fate-deck"]).toHaveLength(15);
     });
-
-    it.todo("every card has a unique id");
-
-    it.todo("decks are shuffled");
 });
 
 describe("instantiateCustomBoardState correctly instantiates given custom villain definitions", () => {
-    it.todo("string and object are treated the same");
-
     it("credit amounts are not altered", () => {
         const board = instantiateCustomBoardState({ "villain-name": "Moff Gideon" });
 
@@ -265,7 +279,30 @@ describe("instantiateCustomBoardState correctly instantiates given custom villai
         expect(villain["hand"]).toHaveLength(0);
     });
 
-    it.todo("every card has a unique id");
+    it("doesn't apply a non-deck or location key which is not credits, ambition, or villain-mover-position", () => {
+        const board = instantiateCustomBoardState({
+            "villain-name": "Moff Gideon",
+            "player-id": "43",
+        });
+
+        expect(board["sectors"]["p1"]["player-id"]).not.toEqual("43");
+    });
+
+    it("every villain has a unique player id", () => {
+        const board = instantiateCustomBoardState({ "villain-name": "Moff Gideon" });
+        const playerIdKeys = Object.keys(board["sectors"]);
+        const playerIdsInVillains = Object.values(board["sectors"]).map(
+            (sector) => sector["player-id"]
+        );
+        const playerIdKeysSet = new Set(playerIdKeys);
+        const playerIdsInVillainsSet = new Set(playerIdsInVillains);
+
+        expect(playerIdKeysSet.size).toEqual(2);
+        expect(playerIdsInVillainsSet.size).toEqual(2);
+        expect(playerIdKeys).toEqual(playerIdsInVillains);
+    });
+
+    it.todo("every card has a unique card id");
 });
 
 describe("instantiateCustomBoardState correctly uses shorthand for cards", () => {
