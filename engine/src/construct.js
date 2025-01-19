@@ -107,6 +107,12 @@ function instantiateCustomBoardState(...villainsOrVillainNames) {
     };
 }
 
+/**
+ * Create a custom villain state from the passed custom definition
+ * @param {object} villainDefinition object of villain state, with all decks and location card
+ * lists using string shorthand for card names
+ * @returns the villain state with card strings mapped to instantiated card objects
+ */
 function instantiateCustomVillain(villainDefinition) {
     // Create default villain definition
     let villainToReturn;
@@ -227,6 +233,11 @@ function instantiateStartingBoardState(...villainNames) {
     };
 }
 
+/**
+ * Create a default villain definition from the provided name.
+ * @param {string} villainName villain to create
+ * @returns villain game state, with populated decks, though not shuffled
+ */
 function instantiateVillain(villainName) {
     const villainDefinition = getVillainDefinition(villainName);
 

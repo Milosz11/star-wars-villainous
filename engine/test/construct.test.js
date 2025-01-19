@@ -112,6 +112,8 @@ describe("instantiateStartingBoardState properly constructs initial game board",
         expect(filteredHeroCard).not.toHaveProperty("attached-cards", expect.any(Array));
         expect(filteredHeroCard).not.toHaveProperty("additional-strength", expect.any(Number));
     });
+
+    it.todo("every card has a unique id");
 });
 
 describe("instantiateCustomBoardState throws Error on invalid arguments", () => {
