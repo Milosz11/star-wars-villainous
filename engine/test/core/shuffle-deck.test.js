@@ -1,5 +1,4 @@
-const { instantiateCustomBoardState, instantiateStartingBoardState } = require("../src/construct");
-const { beginGame, shuffleDeck, addCredits, drawVillainCard } = require("../src/core");
+const { shuffleDeck } = require("../../src/core");
 
 describe("shuffleDeck", () => {
     const originalDeck = [
@@ -79,22 +78,4 @@ describe("shuffleDeck", () => {
 
         expect(groupByCount(originalDeck)).toEqual(groupByCount(shuffled));
     });
-});
-
-describe("addCredits", () => {
-    it.todo("increments from zero");
-
-    it.todo("increments from non-zero number");
-});
-
-describe("beginGame initializes the game board", () => {
-    it.todo("shuffle all villain and fate decks");
-
-    it.todo("add credits to non-first players per game rules");
-});
-
-describe("drawVillainCard", () => {
-    it.todo("card gets removed from villain deck");
-
-    it.todo("card gets added to hand");
 });
