@@ -15,8 +15,9 @@ const { getVillainDefinition, getCardDefinition } = require("../definitions/defi
  * wrong deck, undefined behavior results. The key 'locations' takes an object of keys representing
  * that villain's locations to overwrite from the defaults. Each value is an object containing keys
  * 'villain-side-cards' and 'hero-side-cards'. These keys associate to lists of strings of card names
- * that should be at that location. Any other key, like 'ambition', is set as passed and throws
- * error on improper types. Any key that doesn't exist in the board state in ignored.
+ * that should be at that location. Keys 'ambition', 'credits', and 'villain-mover-position' is set
+ * as passed and throws error on improper types. Any key that doesn't exist in the board state is
+ * ignored.
  *
  * If less than the minimum number of required villains is provided. Default ones will be used.
  * These get instantiated the same way as if they were provided with the shorthand method.
@@ -83,21 +84,14 @@ function instantiateCustomBoardState(...villainsOrVillainNames) {
     });
     const villainsToCreate = villainsOrVillainNames.concat(defaultVillainsToAdd).slice(0, 2);
 
-    const villains = villainsToCreate.map((v) => {
-        if (typeof v == "object") {
-            return instantiateCustomVillain(v);
-        } else {
-            return instantiateVillain(v);
-        }
-    });
-
     // For each villain, create a unique player id and associate with their
     // villain's custom/default instantiated sector.
-    let sectors = {};
-    villains.forEach((v, index) => {
+    const sectors = villainsToCreate.reduce((acc, v, index) => {
         const playerId = "p" + (index + 1);
-        sectors[[playerId]] = v;
-    });
+        let villain = typeof v == "object" ? instantiateCustomVillain(v) : instantiateVillain(v);
+        Object.assign(villain, { "player-id": playerId });
+        return Object.assign(acc, { [playerId]: villain });
+    }, {});
 
     return {
         "counter": 0,
@@ -220,8 +214,9 @@ function instantiateStartingBoardState(...villainNames) {
     // For each villain, create a unique player id and associate with their
     // villain's instantiated sector.
     const sectors = villainNames.reduce((acc, villainName, index) => {
-        const villain = instantiateVillain(villainName);
         const playerId = "p" + (index + 1);
+        let villain = instantiateVillain(villainName);
+        Object.assign(villain, { "player-id": playerId });
         return Object.assign(acc, { [playerId]: villain });
     }, {});
 
