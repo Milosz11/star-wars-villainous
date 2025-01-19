@@ -6,8 +6,7 @@ const { getVillainDefinition, getCardDefinition } = require("../definitions/defi
  * @param {any[]} villainsOrVillainNames A list containing strings of villain names or object
  * definitions of those villains.
  *
- * In the case of a string, the villain will be created from their default definition with their
- * decks shuffled, but will not have their credit amounts altered.
+ * In the case of a string, the villain will be created using 'instantiateVillain'.
  *
  * In the case of an object, the key 'villain-name' is required. The keys 'hand', 'villain-deck',
  * 'villain-discard-pile', 'fate-deck', and 'fate-discard-pile' use the string shorthand.
