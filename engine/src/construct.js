@@ -90,6 +90,7 @@ function instantiateCustomBoardState(...villainsOrVillainNames) {
         const playerId = "p" + (index + 1);
         let villain = typeof v == "object" ? instantiateCustomVillain(v) : instantiateVillain(v);
         Object.assign(villain, { "player-id": playerId });
+        assignCardIdsToSector(villain);
         return Object.assign(acc, { [playerId]: villain });
     }, {});
 
@@ -217,6 +218,7 @@ function instantiateStartingBoardState(...villainNames) {
         const playerId = "p" + (index + 1);
         let villain = instantiateVillain(villainName);
         Object.assign(villain, { "player-id": playerId });
+        assignCardIdsToSector(villain);
         return Object.assign(acc, { [playerId]: villain });
     }, {});
 
@@ -235,10 +237,11 @@ function instantiateStartingBoardState(...villainNames) {
 function instantiateVillain(villainName) {
     const villainDefinition = getVillainDefinition(villainName);
 
-    const repeat = (count, value) => {
+    const repeat = (count, object) => {
         let ret = [];
         for (let i = 0; i < count; i++) {
-            ret.push(value);
+            // Should create new objects, not push the same reference.
+            ret.push(Object.assign({}, object));
         }
         return ret;
     };
@@ -275,7 +278,8 @@ function instantiateVillain(villainName) {
 function instantiateCard(villainName, cardName) {
     const cardDefinition = getCardDefinition(villainName, cardName);
 
-    return Object.assign(cardDefinition, getLiveCardTypeKvs(cardDefinition["card-type"]));
+    // Assigning to an empty object makes a new one, which is what we want
+    return Object.assign({}, cardDefinition, getLiveCardTypeKvs(cardDefinition["card-type"]));
 }
 
 function getLiveCardTypeKvs(cardType) {
@@ -293,6 +297,48 @@ function getLiveCardTypeKvs(cardType) {
         default:
             return {};
     }
+}
+
+/**
+ * Return the passed sector with every card in the game board having a unique id,
+ * given by the 'card-id' key.
+ * Iterates through every villain field that could contain cards and applies a unique id.
+ * Ids are arbitrary; it only matters there is one of them in a game.
+ *
+ * This should only be called if the sector has a key 'player-id', which represents which player
+ * this villain belongs to. This key's value is used in the card id.
+ *
+ * @param {object} sector the villain sector to update in-place
+ * @return a reference to the updated sector
+ */
+function assignCardIdsToSector(sector) {
+    const playerId = sector["player-id"];
+
+    let idCounter = 1;
+
+    ["hand", "villain-deck", "villain-discard-pile", "fate-deck", "fate-discard-pile"].forEach(
+        (deck) => {
+            for (let i = 0; i < sector[[deck]].length; i++) {
+                const cardId = playerId + "c" + idCounter;
+                idCounter++;
+                Object.assign(sector[[deck]][i], { "card-id": cardId });
+            }
+        }
+    );
+
+    sector["locations"] = sector["locations"].map((location) => {
+        ["hero-side-cards", "villain-side-cards"].forEach((deck) => {
+            for (let i = 0; i < location[[deck]].length; i++) {
+                const cardId = playerId + "c" + idCounter;
+                idCounter++;
+                Object.assign(location[[deck]][i], { "card-id": cardId });
+            }
+        });
+
+        return location;
+    });
+
+    return sector;
 }
 
 module.exports = { instantiateStartingBoardState, instantiateCustomBoardState };
