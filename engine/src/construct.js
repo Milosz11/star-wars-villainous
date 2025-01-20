@@ -303,7 +303,15 @@ function getLiveCardTypeKvs(cardType) {
  * Return the passed sector with every card in the game board having a unique id,
  * given by the 'card-id' key.
  * Iterates through every villain field that could contain cards and applies a unique id.
- * Ids are arbitrary; it only matters there is one of them in a game.
+ *
+ * The following is important when creating states with instantiateCustomBoardState and testing
+ * indiviual cards:
+ * This function iterates through possible card decks in the order they appear in a sector state.
+ * This means the following order: locations as defined in the definition, hero-side-cards coming
+ * first, then villain-side-cards. This is followed by hand, villain-deck, villain-discard-pile,
+ * fate-deck, fate-discard-pile.
+ * Each card id is the following value: XcY, where X is a player id (p1, p2, ...), and Y
+ * is the Y'th position that card appears in the sector, 1-indexed.
  *
  * This should only be called if the sector has a key 'player-id', which represents which player
  * this villain belongs to. This key's value is used in the card id.
@@ -316,16 +324,6 @@ function assignCardIdsToSector(sector) {
 
     let idCounter = 1;
 
-    ["hand", "villain-deck", "villain-discard-pile", "fate-deck", "fate-discard-pile"].forEach(
-        (deck) => {
-            for (let i = 0; i < sector[[deck]].length; i++) {
-                const cardId = playerId + "c" + idCounter;
-                idCounter++;
-                Object.assign(sector[[deck]][i], { "card-id": cardId });
-            }
-        }
-    );
-
     sector["locations"] = sector["locations"].map((location) => {
         ["hero-side-cards", "villain-side-cards"].forEach((deck) => {
             for (let i = 0; i < location[[deck]].length; i++) {
@@ -337,6 +335,16 @@ function assignCardIdsToSector(sector) {
 
         return location;
     });
+
+    ["hand", "villain-deck", "villain-discard-pile", "fate-deck", "fate-discard-pile"].forEach(
+        (deck) => {
+            for (let i = 0; i < sector[[deck]].length; i++) {
+                const cardId = playerId + "c" + idCounter;
+                idCounter++;
+                Object.assign(sector[[deck]][i], { "card-id": cardId });
+            }
+        }
+    );
 
     return sector;
 }
