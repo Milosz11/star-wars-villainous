@@ -123,7 +123,28 @@ describe("instantiateStartingBoardState properly constructs initial game board",
         expect(playerIdKeys).toEqual(playerIdsInVillains);
     });
 
-    it.todo("every card has a unique id");
+    it("every card has a unique id", () => {
+        let cardList = [];
+        for (const v of Object.values(board["sectors"])) {
+            cardList = cardList.concat(v["villain-deck"]);
+            cardList = cardList.concat(v["fate-deck"]);
+        }
+
+        const doAllHaveIds = cardList.every((card) => {
+            return card.hasOwnProperty("card-id");
+        });
+        expect(doAllHaveIds).toBeTruthy();
+
+        const cardIdList = cardList.map((card) => {
+            return card["card-id"];
+        });
+
+        const cardIdSet = new Set(cardIdList);
+
+        // FIXME this currently fails because General Grievous' definition is not complete.
+        // (30 villain cards + 15 fate cards) * 2 villains
+        expect(cardIdSet.size).toEqual(90);
+    });
 });
 
 describe("instantiateCustomBoardState throws Error on invalid arguments", () => {
@@ -302,7 +323,53 @@ describe("instantiateCustomBoardState correctly instantiates given custom villai
         expect(playerIdKeys).toEqual(playerIdsInVillains);
     });
 
-    it.todo("every card has a unique card id");
+    it("every card has a unique card id", () => {
+        const board = instantiateCustomBoardState({
+            "villain-name": "Moff Gideon",
+            "locations": {
+                "Nevarro City": {
+                    "villain-side-cards": ["The Client", "Doctor Pershing"],
+                    "hero-side-cards": ["Fennec Shand"],
+                },
+                "The Bridge": {
+                    "villain-side-cards": ["Dark Troopers", "Dark Troopers"],
+                    "hero-side-cards": ["The Mandalorian", "Bo-Katan Kryze"],
+                },
+            },
+            "hand": ["Dark Troopers", "Death Troopers", "Darksaber"],
+            "villain-deck": ["Stormtroopers", "Beskar", "Imperial Light Cruiser"],
+            "villain-discard-pile": ["Death Troopers", "Stormtroopers"],
+            "fate-deck": ["The Return of Fett", "The Jedi", "The Bounty"],
+            "fate-discard-pile": ["Koska Reeves", "Unexpected Help"],
+        });
+
+        let cardList = [];
+        for (const v of Object.values(board["sectors"])) {
+            for (const loc of v["locations"]) {
+                cardList = cardList.concat(loc["hero-side-cards"]);
+                cardList = cardList.concat(loc["villain-side-cards"]);
+            }
+            cardList = cardList.concat(v["hand"]);
+            cardList = cardList.concat(v["villain-deck"]);
+            cardList = cardList.concat(v["villain-discard-pile"]);
+            cardList = cardList.concat(v["fate-deck"]);
+            cardList = cardList.concat(v["fate-discard-pile"]);
+        }
+
+        const doAllHaveIds = cardList.every((card) => {
+            return card.hasOwnProperty("card-id");
+        });
+        expect(doAllHaveIds).toBeTruthy();
+
+        const cardIdList = cardList.map((card) => {
+            return card["card-id"];
+        });
+        const cardIdSet = new Set(cardIdList);
+
+        // FIXME this currently fails because General Grievous' definition is not complete.
+        // (30 villain cards + 15 fate cards) + 20 cards in Moff Gideon's custom definition above
+        expect(cardIdSet.size).toEqual(65);
+    });
 });
 
 describe("instantiateCustomBoardState correctly uses shorthand for cards", () => {
