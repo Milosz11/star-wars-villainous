@@ -1,6 +1,15 @@
 const randomSeed = require("random-seed");
 
 /**
+ * Get all the player ids the passed game board
+ * @param {object} state the board state
+ * @returns a list of ids of the players in the game
+ */
+function getPlayerIds(state) {
+    return Object.keys(state["sectors"]);
+}
+
+/**
  * Return the player object given the playerId argument.
  * @param {object} state the board state
  * @param {string} playerId the id of the player (villain) to return
@@ -88,4 +97,11 @@ function addCredits(state, playerId, credits) {
     return state;
 }
 
-module.exports = { beginGame, shuffleDeck, drawVillainCard, addCredits, getPlayerById };
+module.exports = {
+    beginGame,
+    shuffleDeck,
+    drawVillainCard,
+    addCredits,
+    getPlayerById,
+    getPlayerIds,
+};
