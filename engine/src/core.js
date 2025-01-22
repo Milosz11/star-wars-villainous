@@ -46,14 +46,30 @@ function drawVillainCard(state) {
 }
 
 /**
- * Increment a player's credit amount by the given amount.
- * Throws Error on 'amount' < 0.
- * @param {*} state
- * @param {*} playerId
- * @param {*} amount
- * @returns the new state with the incremented credit amount
+ * Increment a player's credit.
+ * @param {object} state the board state
+ * @param {string} playerId the player it increment the credits for
+ * @param {integer} credits how many credits to increment by
+ * @returns the new game state with the incremented credit amount
  */
-function addCredits(state, playerId, amount) {
+function addCredits(state, playerId, credits) {
+    const inPlayPlayerIds = Object.keys(state["sectors"]);
+    if (!inPlayPlayerIds.includes(playerId)) {
+        throw new Error("Non-existent player id");
+    }
+
+    if (!Number.isInteger(credits)) {
+        throw new Error("Credit amount must be an integer");
+    }
+
+    if (credits < 0) {
+        throw new Error("Credit amount must be non-negative");
+    }
+
+    state = Object.assign({}, state);
+
+    state["sectors"][[playerId]]["credits"] += credits;
+
     return state;
 }
 
