@@ -1,6 +1,21 @@
 const randomSeed = require("random-seed");
 
 /**
+ * Return the player object given the playerId argument.
+ * @param {object} state the board state
+ * @param {string} playerId the id of the player (villain) to return
+ * @returns the player sector identified by the id
+ */
+function getPlayerById(state, playerId) {
+    const inPlayPlayerIds = Object.keys(state["sectors"]);
+    if (!inPlayPlayerIds.includes(playerId)) {
+        throw new Error("Non-existent player id");
+    }
+
+    return state["sectors"][[playerId]];
+}
+
+/**
  * Takes a newly instatiated game board and sets it up for play, shuffling decks, adding intial
  * credits per game rules, and drawing the initial hand
  * @param {*} state
@@ -73,4 +88,4 @@ function addCredits(state, playerId, credits) {
     return state;
 }
 
-module.exports = { beginGame, shuffleDeck, drawVillainCard, addCredits };
+module.exports = { beginGame, shuffleDeck, drawVillainCard, addCredits, getPlayerById };
