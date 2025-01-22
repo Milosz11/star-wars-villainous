@@ -253,7 +253,7 @@ function instantiateVillain(villainName) {
         "ambition": 0,
         "credits": 0,
         "locations": villainDefinition["locations"].map((location) => {
-            return Object.assign(location, {
+            return Object.assign({}, location, {
                 "taken-actions": [],
                 "hero-side-cards": [],
                 "villain-side-cards": [],
