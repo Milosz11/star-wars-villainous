@@ -1,3 +1,4 @@
+const R = require("ramda");
 const fs = require("node:fs");
 const { getVillainDefinition, getCardDefinition } = require("../definitions/definition-loader");
 
@@ -241,7 +242,7 @@ function instantiateVillain(villainName) {
         let ret = [];
         for (let i = 0; i < count; i++) {
             // Should create new objects, not push the same reference.
-            ret.push(Object.assign({}, object));
+            ret.push(R.clone(object));
         }
         return ret;
     };
@@ -253,7 +254,8 @@ function instantiateVillain(villainName) {
         "ambition": 0,
         "credits": 0,
         "locations": villainDefinition["locations"].map((location) => {
-            return Object.assign({}, location, {
+            const locationCopy = R.clone(location);
+            return Object.assign(locationCopy, {
                 "taken-actions": [],
                 "hero-side-cards": [],
                 "villain-side-cards": [],
@@ -276,10 +278,9 @@ function instantiateVillain(villainName) {
 }
 
 function instantiateCard(villainName, cardName) {
-    const cardDefinition = getCardDefinition(villainName, cardName);
+    const cardDefinition = R.clone(getCardDefinition(villainName, cardName));
 
-    // Assigning to an empty object makes a new one, which is what we want
-    return Object.assign({}, cardDefinition, getLiveCardTypeKvs(cardDefinition["card-type"]));
+    return Object.assign(cardDefinition, getLiveCardTypeKvs(cardDefinition["card-type"]));
 }
 
 function getLiveCardTypeKvs(cardType) {

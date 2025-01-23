@@ -1,5 +1,5 @@
 const { instantiateCustomBoardState } = require("../../src/construct");
-const { addCredits } = require("../../src/core");
+const { addCredits, getPlayerById } = require("../../src/core");
 
 describe("addCredits", () => {
     it("throws error on non-existent player id", () => {
@@ -42,11 +42,11 @@ describe("addCredits", () => {
         expect(newBoard["sectors"]["p1"]["credits"]).toEqual(7);
     });
 
-    it("returns a new state", () => {
+    it("previous board state is not altered", () => {
         const board = instantiateCustomBoardState({ "villain-name": "Moff Gideon", "credits": 3 });
 
-        const newBoard = addCredits(board, "p1", 4);
+        const _ = addCredits(board, "p1", 4);
 
-        expect(newBoard).not.toBe(board);
+        expect(getPlayerById(board, "p1")["credits"]).toEqual(3);
     });
 });

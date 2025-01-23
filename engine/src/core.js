@@ -1,7 +1,8 @@
+const R = require("ramda");
 const randomSeed = require("random-seed");
 
 /**
- * Get all the player ids the passed game board
+ * Get all the player ids in the passed game board
  * @param {object} state the board state
  * @returns a list of ids of the players in the game
  */
@@ -10,10 +11,10 @@ function getPlayerIds(state) {
 }
 
 /**
- * Return the player object given the playerId argument.
+ * Return the player object given by the playerId argument.
  * @param {object} state the board state
  * @param {string} playerId the id of the player (villain) to return
- * @returns the player sector identified by the id
+ * @returns a reference to the player sector identified by the id
  */
 function getPlayerById(state, playerId) {
     const inPlayPlayerIds = Object.keys(state["sectors"]);
@@ -90,11 +91,11 @@ function addCredits(state, playerId, credits) {
         throw new Error("Credit amount must be non-negative");
     }
 
-    state = Object.assign({}, state);
+    const board = R.clone(state);
 
-    state["sectors"][[playerId]]["credits"] += credits;
+    board["sectors"][[playerId]]["credits"] += credits;
 
-    return state;
+    return board;
 }
 
 module.exports = {
