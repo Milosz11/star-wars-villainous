@@ -28,6 +28,54 @@ module.exports = {
             "count": 3,
             "name": "BX-Droid Commandos",
         },
+        {
+            "count": 2,
+            "name": "B2 Super Battle Droids",
+        },
+        {
+            "count": 2,
+            "name": "Droidekas",
+        },
+        {
+            "count": 2,
+            "name": "Magna Guard",
+        },
+        {
+            "count": 1,
+            "name": "Gor",
+        },
+        {
+            "count": 3,
+            "name": "Escape Plan",
+        },
+        {
+            "count": 2,
+            "name": "Count Dooku's Orders",
+        },
+        {
+            "count": 2,
+            "name": "Motivational Tactics",
+        },
+        {
+            "count": 1,
+            "name": "Add to My Collection",
+        },
+        {
+            "count": 3,
+            "name": "Hunting Jedi",
+        },
+        {
+            "count": 3,
+            "name": "Trained in the Jedi Arts",
+        },
+        {
+            "count": 1,
+            "name": "Soulless One",
+        },
+        {
+            "count": 1,
+            "name": "Malevolence",
+        },
     ],
     "fate-deck": [
         {
