@@ -84,7 +84,51 @@ module.exports = {
         },
         {
             "count": 1,
+            "name": "Kit Fisto",
+        },
+        {
+            "count": 1,
+            "name": "Ahsoka Tano",
+        },
+        {
+            "count": 1,
+            "name": "Plo Koon",
+        },
+        {
+            "count": 1,
+            "name": "Obi-Wan Kenobi",
+        },
+        {
+            "count": 1,
+            "name": "Mace Windu",
+        },
+        {
+            "count": 2,
+            "name": "Retreat",
+        },
+        {
+            "count": 2,
+            "name": "May the Force Be With You",
+        },
+        {
+            "count": 1,
+            "name": "Captured",
+        },
+        {
+            "count": 1,
             "name": "Exposed",
+        },
+        {
+            "count": 1,
+            "name": "Under Repair",
+        },
+        {
+            "count": 1,
+            "name": "Delta-7 Jedi Starfighter",
+        },
+        {
+            "count": 1,
+            "name": "The Negotiator",
         },
     ],
 };
