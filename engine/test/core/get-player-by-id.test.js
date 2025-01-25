@@ -3,7 +3,7 @@ const { getPlayerById } = require("../../src/core");
 
 describe("getPlayerById", () => {
     it("throws error on non-existent player id", () => {
-        const board = instantiateCustomBoardState("Moff Gideon");
+        const board = instantiateCustomBoardState(["Moff Gideon"]);
 
         expect(() => {
             const player = getPlayerById(board, "e1");
@@ -11,7 +11,7 @@ describe("getPlayerById", () => {
     });
 
     it("gets the proper player 1", () => {
-        const board = instantiateCustomBoardState("Moff Gideon");
+        const board = instantiateCustomBoardState(["Moff Gideon"]);
 
         const player = getPlayerById(board, "p1");
 
@@ -20,7 +20,7 @@ describe("getPlayerById", () => {
     });
 
     it("gets the proper player 2", () => {
-        const board = instantiateCustomBoardState("Moff Gideon");
+        const board = instantiateCustomBoardState(["Moff Gideon"]);
 
         const player = getPlayerById(board, "p2");
 

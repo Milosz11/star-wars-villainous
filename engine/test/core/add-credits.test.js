@@ -3,7 +3,7 @@ const { addCredits, getPlayerById } = require("../../src/core");
 
 describe("addCredits", () => {
     it("throws error on non-existent player id", () => {
-        const board = instantiateCustomBoardState("Moff Gideon");
+        const board = instantiateCustomBoardState(["Moff Gideon"]);
 
         expect(() => {
             const newBoard = addCredits(board, "h3", 3);
@@ -11,7 +11,7 @@ describe("addCredits", () => {
     });
 
     it("throws error when credits is negative", () => {
-        const board = instantiateCustomBoardState("Moff Gideon");
+        const board = instantiateCustomBoardState(["Moff Gideon"]);
 
         expect(() => {
             const newBoard = addCredits(board, "p1", -2);
@@ -19,7 +19,7 @@ describe("addCredits", () => {
     });
 
     it("throws error when credits is not an integer", () => {
-        const board = instantiateCustomBoardState("Moff Gideon");
+        const board = instantiateCustomBoardState(["Moff Gideon"]);
 
         expect(() => {
             const newBoard = addCredits(board, "p1", 5.6);
@@ -27,7 +27,7 @@ describe("addCredits", () => {
     });
 
     it("increments from zero", () => {
-        const board = instantiateCustomBoardState("Moff Gideon");
+        const board = instantiateCustomBoardState(["Moff Gideon"]);
 
         const newBoard = addCredits(board, "p1", 3);
 
@@ -35,7 +35,9 @@ describe("addCredits", () => {
     });
 
     it("increments from non-zero number", () => {
-        const board = instantiateCustomBoardState({ "villain-name": "Moff Gideon", "credits": 3 });
+        const board = instantiateCustomBoardState([
+            { "villain-name": "Moff Gideon", "credits": 3 },
+        ]);
 
         const newBoard = addCredits(board, "p1", 4);
 
@@ -43,7 +45,9 @@ describe("addCredits", () => {
     });
 
     it("previous board state is not altered", () => {
-        const board = instantiateCustomBoardState({ "villain-name": "Moff Gideon", "credits": 3 });
+        const board = instantiateCustomBoardState([
+            { "villain-name": "Moff Gideon", "credits": 3 },
+        ]);
 
         const _ = addCredits(board, "p1", 4);
 

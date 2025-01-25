@@ -3,42 +3,65 @@ const { instantiateStartingBoardState, instantiateCustomBoardState } = require("
 const availableVillains = ["Moff Gideon", "General Grievous", "Darth Vader"];
 
 describe("instantiateStartingBoardState throws Error on bad input", () => {
+    it("no availableVillains array passed", () => {
+        expect(() => {
+            instantiateStartingBoardState();
+        }).toThrow("'villainNames' is a falsy value. Should be a list of strings");
+    });
+
     it("when invalid argument is passed", () => {
         expect(() => {
-            instantiateStartingBoardState(availableVillains[0], "non-existent villain");
+            instantiateStartingBoardState([availableVillains[0], "non-existent villain"]);
         }).toThrow("Bad villain name value");
     });
 
     it("with too little number of villains", () => {
         expect(() => {
-            instantiateStartingBoardState(availableVillains[0]);
+            instantiateStartingBoardState([availableVillains[0]]);
         }).toThrow("Improper length of villain names");
     });
 
     it("with too many number of villains", () => {
         expect(() => {
-            instantiateStartingBoardState(
+            instantiateStartingBoardState([
                 availableVillains[0],
                 availableVillains[1],
-                availableVillains[2]
-            );
+                availableVillains[2],
+            ]);
         }).toThrow("Improper length of villain names");
     });
 
     it("when duplicate villain names are passed", () => {
         expect(() => {
-            instantiateStartingBoardState(availableVillains[0], availableVillains[0]);
+            instantiateStartingBoardState([availableVillains[0], availableVillains[0]]);
         }).toThrow("Duplicate villain names passed");
+    });
+
+    it("seed length invalid type", () => {
+        expect(() => {
+            instantiateStartingBoardState([availableVillains[0], availableVillains[1]], {
+                "seed": 3,
+            });
+        }).toThrow("Invalid seed; should be a string with length >= 8");
+    });
+
+    it("seed length 0", () => {
+        expect(() => {
+            instantiateStartingBoardState([availableVillains[0], availableVillains[1]], {
+                "seed": "",
+            });
+        }).toThrow("Invalid seed; should be a string with length >= 8");
     });
 });
 
 describe("instantiateStartingBoardState properly constructs initial game board", () => {
-    const board = instantiateStartingBoardState(availableVillains[0], availableVillains[1]);
+    const board = instantiateStartingBoardState([availableVillains[0], availableVillains[1]]);
 
     it("has proper first level keys", () => {
         expect(board).toHaveProperty("player-id-in-turn", "p1");
         expect(board).toHaveProperty("counter", 0);
         expect(board).toHaveProperty("sectors", expect.any(Object));
+        expect(board).toHaveProperty("seed", expect.any(String));
     });
 
     it("has proper keys in a sector", () => {
@@ -150,94 +173,129 @@ describe("instantiateStartingBoardState properly constructs initial game board",
 describe("instantiateCustomBoardState throws Error on invalid arguments", () => {
     it("more than 2 villains provided", () => {
         expect(() => {
-            instantiateCustomBoardState("Moff Gideon", "General Grievous", "Darth Vader");
+            instantiateCustomBoardState(["Moff Gideon", "General Grievous", "Darth Vader"]);
         }).toThrow("Too many arguments provided");
     });
 
     it("wrong types", () => {
         expect(() => {
-            instantiateCustomBoardState("Moff Gideon", 0);
+            instantiateCustomBoardState(["Moff Gideon", 0]);
         }).toThrow("Invalid arguments provided");
     });
 
     it("bad villain name", () => {
         expect(() => {
-            instantiateCustomBoardState("Moff");
+            instantiateCustomBoardState(["Moff"]);
         }).toThrow("Invalid arguments provided");
     });
 
     it("villain object definition does not have 'villain-name' key", () => {
         expect(() => {
-            instantiateCustomBoardState({ "ambition": 3 });
+            instantiateCustomBoardState([{ "ambition": 3 }]);
         }).toThrow("Key 'villain-name' not provided with villain definition");
     });
 
     it("'villain-name' key has invalid villain name", () => {
         expect(() => {
-            instantiateCustomBoardState({ "villain-name": "Revan" });
+            instantiateCustomBoardState([{ "villain-name": "Revan" }]);
         }).toThrow("Key 'villain-name' has invalid villain name");
     });
 
     it("duplicate villains provided 1", () => {
         expect(() => {
-            instantiateCustomBoardState("Moff Gideon", "Moff Gideon");
+            instantiateCustomBoardState(["Moff Gideon", "Moff Gideon"]);
         }).toThrow("Duplicate villain names passed");
     });
 
     it("duplicate villains provided 2", () => {
         expect(() => {
-            instantiateCustomBoardState("Moff Gideon", { "villain-name": "Moff Gideon" });
+            instantiateCustomBoardState(["Moff Gideon", { "villain-name": "Moff Gideon" }]);
         }).toThrow("Duplicate villain names passed");
     });
 
     it("bad type for a key like ambition", () => {
         expect(() => {
-            instantiateCustomBoardState({
-                "villain-name": "Moff Gideon",
-                "ambition": "3",
-                "villain-deck": ["Hello There"],
-            });
+            instantiateCustomBoardState([
+                {
+                    "villain-name": "Moff Gideon",
+                    "ambition": "3",
+                    "villain-deck": ["Hello There"],
+                },
+            ]);
         }).toThrow("Passed keys have bad type");
     });
 
     it("non-existent card given to a villain", () => {
         expect(() => {
-            instantiateCustomBoardState({
-                "villain-name": "Moff Gideon",
-                "villain-deck": ["Hello There"],
-            });
+            instantiateCustomBoardState([
+                {
+                    "villain-name": "Moff Gideon",
+                    "villain-deck": ["Hello There"],
+                },
+            ]);
         }).toThrow("Non-existent cards provided");
     });
 
     it("non-existent location specified", () => {
         expect(() => {
-            instantiateCustomBoardState({
-                "villain-name": "Moff Gideon",
-                "locations": {
-                    "not a real place": {
-                        "villain-side-cards": ["Dark Troopers"],
+            instantiateCustomBoardState([
+                {
+                    "villain-name": "Moff Gideon",
+                    "locations": {
+                        "not a real place": {
+                            "villain-side-cards": ["Dark Troopers"],
+                        },
                     },
                 },
-            });
+            ]);
         }).toThrow("Non-existent location specified");
     });
 
     it("non-existent card given in location", () => {
         expect(() => {
-            instantiateCustomBoardState({
-                "villain-name": "Moff Gideon",
-                "locations": {
-                    "Nevarro City": {
-                        "villain-side-cards": ["It's Over Anakin"],
+            instantiateCustomBoardState([
+                {
+                    "villain-name": "Moff Gideon",
+                    "locations": {
+                        "Nevarro City": {
+                            "villain-side-cards": ["It's Over Anakin"],
+                        },
                     },
                 },
-            });
+            ]);
         }).toThrow("Non-existent cards provided");
+    });
+
+    it("seed length invalid type", () => {
+        expect(() => {
+            instantiateCustomBoardState([], {
+                "seed": 3,
+            });
+        }).toThrow("Invalid seed; should be a string with length >= 8");
+    });
+
+    it("seed length 0", () => {
+        expect(() => {
+            instantiateCustomBoardState([], {
+                "seed": "",
+            });
+        }).toThrow("Invalid seed; should be a string with length >= 8");
+    });
+});
+
+describe("instantiateCustomBoardState properly constructs initial game board", () => {
+    const board = instantiateCustomBoardState();
+
+    it("has proper first level keys", () => {
+        expect(board).toHaveProperty("player-id-in-turn", "p1");
+        expect(board).toHaveProperty("counter", 0);
+        expect(board).toHaveProperty("sectors", expect.any(Object));
+        expect(board).toHaveProperty("seed", expect.any(String));
     });
 });
 
 describe("instantiateCustomBoardState correctly instantiates using string shorthand", () => {
-    const board = instantiateCustomBoardState("Moff Gideon");
+    const board = instantiateCustomBoardState(["Moff Gideon"]);
     const villain = board["sectors"]["p1"];
 
     it("credit amounts are not altered", () => {
@@ -264,7 +322,7 @@ describe("instantiateCustomBoardState correctly instantiates using string shorth
 });
 
 describe("instantiateCustomBoardState nonspecified villains are treated the same as shorthand", () => {
-    const villain = instantiateCustomBoardState("General Grievous")["sectors"]["p2"];
+    const villain = instantiateCustomBoardState(["General Grievous"])["sectors"]["p2"];
 
     it("credit amounts are not altered", () => {
         expect(villain["credits"]).toBe(0);
@@ -278,19 +336,23 @@ describe("instantiateCustomBoardState nonspecified villains are treated the same
 
 describe("instantiateCustomBoardState correctly instantiates given custom villain definitions", () => {
     it("credit amounts are not altered", () => {
-        const board = instantiateCustomBoardState({ "villain-name": "Moff Gideon" });
+        const board = instantiateCustomBoardState([{ "villain-name": "Moff Gideon" }]);
 
         expect(board["sectors"]["p1"]["credits"]).toBe(0);
     });
 
     it("a key is set if passed (credits are set explicitly)", () => {
-        const board = instantiateCustomBoardState({ "villain-name": "Moff Gideon", "credits": 3 });
+        const board = instantiateCustomBoardState([
+            { "villain-name": "Moff Gideon", "credits": 3 },
+        ]);
 
         expect(board["sectors"]["p1"]["credits"]).toBe(3);
     });
 
     it("villain's decks are empty", () => {
-        const board = instantiateCustomBoardState({ "villain-name": "Moff Gideon", "credits": 3 });
+        const board = instantiateCustomBoardState([
+            { "villain-name": "Moff Gideon", "credits": 3 },
+        ]);
         const villain = board["sectors"]["p1"];
 
         expect(villain["villain-deck"]).toHaveLength(0);
@@ -301,16 +363,18 @@ describe("instantiateCustomBoardState correctly instantiates given custom villai
     });
 
     it("doesn't apply a non-deck or location key which is not credits, ambition, or villain-mover-position", () => {
-        const board = instantiateCustomBoardState({
-            "villain-name": "Moff Gideon",
-            "player-id": "43",
-        });
+        const board = instantiateCustomBoardState([
+            {
+                "villain-name": "Moff Gideon",
+                "player-id": "43",
+            },
+        ]);
 
         expect(board["sectors"]["p1"]["player-id"]).not.toEqual("43");
     });
 
     it("every villain has a unique player id", () => {
-        const board = instantiateCustomBoardState({ "villain-name": "Moff Gideon" });
+        const board = instantiateCustomBoardState([{ "villain-name": "Moff Gideon" }]);
         const playerIdKeys = Object.keys(board["sectors"]);
         const playerIdsInVillains = Object.values(board["sectors"]).map(
             (sector) => sector["player-id"]
@@ -324,24 +388,26 @@ describe("instantiateCustomBoardState correctly instantiates given custom villai
     });
 
     it("every card has a unique card id", () => {
-        const board = instantiateCustomBoardState({
-            "villain-name": "Moff Gideon",
-            "locations": {
-                "Nevarro City": {
-                    "villain-side-cards": ["The Client", "Doctor Pershing"],
-                    "hero-side-cards": ["Fennec Shand"],
+        const board = instantiateCustomBoardState([
+            {
+                "villain-name": "Moff Gideon",
+                "locations": {
+                    "Nevarro City": {
+                        "villain-side-cards": ["The Client", "Doctor Pershing"],
+                        "hero-side-cards": ["Fennec Shand"],
+                    },
+                    "The Bridge": {
+                        "villain-side-cards": ["Dark Troopers", "Dark Troopers"],
+                        "hero-side-cards": ["The Mandalorian", "Bo-Katan Kryze"],
+                    },
                 },
-                "The Bridge": {
-                    "villain-side-cards": ["Dark Troopers", "Dark Troopers"],
-                    "hero-side-cards": ["The Mandalorian", "Bo-Katan Kryze"],
-                },
+                "hand": ["Dark Troopers", "Death Troopers", "Darksaber"],
+                "villain-deck": ["Stormtroopers", "Beskar", "Imperial Light Cruiser"],
+                "villain-discard-pile": ["Death Troopers", "Stormtroopers"],
+                "fate-deck": ["The Return of Fett", "The Jedi", "The Bounty"],
+                "fate-discard-pile": ["Koska Reeves", "Unexpected Help"],
             },
-            "hand": ["Dark Troopers", "Death Troopers", "Darksaber"],
-            "villain-deck": ["Stormtroopers", "Beskar", "Imperial Light Cruiser"],
-            "villain-discard-pile": ["Death Troopers", "Stormtroopers"],
-            "fate-deck": ["The Return of Fett", "The Jedi", "The Bounty"],
-            "fate-discard-pile": ["Koska Reeves", "Unexpected Help"],
-        });
+        ]);
 
         let cardList = [];
         for (const v of Object.values(board["sectors"])) {
@@ -374,10 +440,12 @@ describe("instantiateCustomBoardState correctly instantiates given custom villai
 
 describe("instantiateCustomBoardState correctly uses shorthand for cards", () => {
     it("villains' decks contain only what was passed 1", () => {
-        const board = instantiateCustomBoardState({
-            "villain-name": "Moff Gideon",
-            "villain-deck": ["The Client"],
-        });
+        const board = instantiateCustomBoardState([
+            {
+                "villain-name": "Moff Gideon",
+                "villain-deck": ["The Client"],
+            },
+        ]);
         const villain = board["sectors"]["p1"];
 
         expect(villain["villain-deck"]).toHaveLength(1);
@@ -388,13 +456,15 @@ describe("instantiateCustomBoardState correctly uses shorthand for cards", () =>
     });
 
     it("villains' decks contain only what was passed 2", () => {
-        const board = instantiateCustomBoardState({
-            "villain-name": "Moff Gideon",
-            "villain-deck": ["The Client", "Dark Troopers"],
-            "villain-discard-pile": ["Death Troopers"],
-            "fate-deck": ["The Mandalorian"],
-            "hand": ["Death Troopers", "Stormtroopers"],
-        });
+        const board = instantiateCustomBoardState([
+            {
+                "villain-name": "Moff Gideon",
+                "villain-deck": ["The Client", "Dark Troopers"],
+                "villain-discard-pile": ["Death Troopers"],
+                "fate-deck": ["The Mandalorian"],
+                "hand": ["Death Troopers", "Stormtroopers"],
+            },
+        ]);
         const villain = board["sectors"]["p1"];
 
         expect(villain["villain-deck"]).toHaveLength(2);
@@ -405,10 +475,12 @@ describe("instantiateCustomBoardState correctly uses shorthand for cards", () =>
     });
 
     it("shorthand properly creates a card from definition", () => {
-        const board = instantiateCustomBoardState({
-            "villain-name": "Moff Gideon",
-            "hand": ["Dark Troopers", "Darksaber"],
-        });
+        const board = instantiateCustomBoardState([
+            {
+                "villain-name": "Moff Gideon",
+                "hand": ["Dark Troopers", "Darksaber"],
+            },
+        ]);
         const villain = board["sectors"]["p1"];
 
         expect(villain["hand"][0]).toHaveProperty("name", "Dark Troopers");
@@ -421,15 +493,17 @@ describe("instantiateCustomBoardState correctly uses shorthand for cards", () =>
 
 describe("instantiateCustomBoardState properly creates locations", () => {
     it("location has cards added to it", () => {
-        const board = instantiateCustomBoardState({
-            "villain-name": "Moff Gideon",
-            "locations": {
-                "The Bridge": {
-                    "villain-side-cards": ["Dark Troopers"],
-                    "hero-side-cards": ["The Mandalorian", "Bo-Katan Kryze"],
+        const board = instantiateCustomBoardState([
+            {
+                "villain-name": "Moff Gideon",
+                "locations": {
+                    "The Bridge": {
+                        "villain-side-cards": ["Dark Troopers"],
+                        "hero-side-cards": ["The Mandalorian", "Bo-Katan Kryze"],
+                    },
                 },
             },
-        });
+        ]);
         const theBridge = board["sectors"]["p1"]["locations"].find((loc) => {
             return loc["name"] == "The Bridge";
         });
@@ -439,15 +513,17 @@ describe("instantiateCustomBoardState properly creates locations", () => {
     });
 
     it("cards at location are instaniated", () => {
-        const board = instantiateCustomBoardState({
-            "villain-name": "Moff Gideon",
-            "locations": {
-                "The Bridge": {
-                    "villain-side-cards": ["Dark Troopers"],
-                    "hero-side-cards": ["The Mandalorian", "Bo-Katan Kryze"],
+        const board = instantiateCustomBoardState([
+            {
+                "villain-name": "Moff Gideon",
+                "locations": {
+                    "The Bridge": {
+                        "villain-side-cards": ["Dark Troopers"],
+                        "hero-side-cards": ["The Mandalorian", "Bo-Katan Kryze"],
+                    },
                 },
             },
-        });
+        ]);
         const theBridge = board["sectors"]["p1"]["locations"].find((loc) => {
             return loc["name"] == "The Bridge";
         });

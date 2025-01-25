@@ -3,7 +3,7 @@ const { getPlayerIds } = require("../../src/core");
 
 describe("getPlayerIds", () => {
     it("gets the expected player ids", () => {
-        const board = instantiateCustomBoardState("Moff Gideon");
+        const board = instantiateCustomBoardState(["Moff Gideon"]);
 
         const playerIds = getPlayerIds(board);
 

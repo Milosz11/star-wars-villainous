@@ -22,11 +22,27 @@ const { getVillainDefinition, getCardDefinition } = require("../definitions/defi
  *
  * If less than the minimum number of required villains is provided. Default ones will be used.
  * These get instantiated the same way as if they were provided with the shorthand method.
+ *
+ * @param {object} kvs an object with other various game inputs, like seed for pseudo-randomness
  * @return the instantiated board state
  */
-function instantiateCustomBoardState(...villainsOrVillainNames) {
+function instantiateCustomBoardState(villainsOrVillainNames, kvs) {
+    if (villainsOrVillainNames == undefined) {
+        villainsOrVillainNames = [];
+    }
+
     if (villainsOrVillainNames.length > 2) {
         throw new Error("Too many arguments provided");
+    }
+
+    let seed;
+    if (typeof kvs == "object") {
+        seed = kvs["seed"];
+        if (seed != undefined) {
+            if (typeof seed != "string" || seed.length < 8) {
+                throw new Error("Invalid seed; should be a string with length >= 8");
+            }
+        }
     }
 
     const data = fs.readFileSync("game-settings.json", "utf-8");
@@ -96,6 +112,7 @@ function instantiateCustomBoardState(...villainsOrVillainNames) {
     }, {});
 
     return {
+        "seed": seed || "lcrgyrylrvmqjwkboeauqkjqwmvaoeux",
         "counter": 0,
         "player-id-in-turn": "p1",
         "sectors": sectors,
@@ -193,9 +210,23 @@ function instantiateCustomVillain(villainDefinition) {
     return villainToReturn;
 }
 
-function instantiateStartingBoardState(...villainNames) {
+function instantiateStartingBoardState(villainNames, kvs) {
+    if (!villainNames) {
+        throw new Error("'villainNames' is a falsy value. Should be a list of strings");
+    }
+
     if (villainNames.length < 2 || villainNames.length > 2) {
         throw new Error("Improper length of villain names");
+    }
+
+    let seed;
+    if (typeof kvs == "object") {
+        seed = kvs["seed"];
+        if (seed != undefined) {
+            if (typeof seed != "string" || seed.length < 8) {
+                throw new Error("Invalid seed; should be a string with length >= 8");
+            }
+        }
     }
 
     const data = fs.readFileSync("game-settings.json", "utf-8");
@@ -224,6 +255,7 @@ function instantiateStartingBoardState(...villainNames) {
     }, {});
 
     return {
+        "seed": seed || "uatsnoehuyptscroehntuoasaotnehue",
         "counter": 0,
         "player-id-in-turn": "p1",
         "sectors": sectors,

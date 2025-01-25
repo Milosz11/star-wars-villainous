@@ -39,7 +39,7 @@ function beginGame(state) {
  * Shuffle a list given a seed.
  * @param {any[]} toShuffle the list to shuffle
  * @param {string} seedStr the random seed string to use for the first shuffle
- * @returns an object with the shuffled list given by the key 'shuffled',
+ * @returns an object with the shuffled list (a deep copy) given by the key 'shuffled',
  * and a new seed given by the key 'seed'
  */
 function shuffleDeck(toShuffle, seedStr) {
@@ -50,8 +50,7 @@ function shuffleDeck(toShuffle, seedStr) {
         throw new TypeError("'seedStr' must be a string");
     }
 
-    // Copy array (should double check when map uses objects)
-    let toReturn = toShuffle.map((item) => item);
+    let toReturn = R.clone(toShuffle);
 
     // Create generator with passed seed
     const rand = randomSeed.create(seedStr);
@@ -66,8 +65,32 @@ function shuffleDeck(toShuffle, seedStr) {
     return { shuffled: toReturn, seed: rand.string(seedStr.length) };
 }
 
-function drawVillainCard(state) {
-    return state;
+/**
+ * Draw 1 villain card from the player's villain deck and put it into the player's hand.
+ * If the villain deck is empty, reshuffle the villain discard pile into the villain deck.
+ * @param {object} state the board state
+ * @param {string} playerId the player to which draw a villain card for
+ * @returns the new deep-copied game state with a villain card drawn
+ */
+function drawVillainCard(state, playerId) {
+    if (!getPlayerIds(state).includes(playerId)) {
+        throw new Error("Non-existent player id");
+    }
+
+    const board = R.clone(state);
+    const player = getPlayerById(board, playerId);
+
+    if (player["villain-deck"].length == 0) {
+        const { shuffled, seed } = shuffleDeck(player["villain-discard-pile"], board["seed"]);
+        player["villain-discard-pile"] = [];
+        player["villain-deck"] = shuffled;
+        board["seed"] = seed;
+    }
+
+    const topVillainCard = player["villain-deck"].shift();
+    player["hand"].push(topVillainCard);
+
+    return board;
 }
 
 /**
@@ -75,7 +98,7 @@ function drawVillainCard(state) {
  * @param {object} state the board state
  * @param {string} playerId the player it increment the credits for
  * @param {integer} credits how many credits to increment by
- * @returns the new game state with the incremented credit amount
+ * @returns the new deep-copied game state with the incremented credit amount
  */
 function addCredits(state, playerId, credits) {
     const inPlayPlayerIds = Object.keys(state["sectors"]);
