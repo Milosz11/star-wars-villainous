@@ -11,6 +11,15 @@ function getPlayerIds(state) {
 }
 
 /**
+ * Return the id of the player whose turn it is
+ * @param {object} state the board state
+ * @returns a string of the current player that is in turn
+ */
+function getPlayerIdInTurn(state) {
+    return state["player-id-in-turn"];
+}
+
+/**
  * Return the player object given by the playerId argument.
  * @param {object} state the board state
  * @param {string} playerId the id of the player (villain) to return
@@ -156,5 +165,6 @@ module.exports = {
     addCredits,
     addAmbition,
     getPlayerById,
+    getPlayerIdInTurn,
     getPlayerIds,
 };
