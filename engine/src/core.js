@@ -96,7 +96,7 @@ function drawVillainCard(state, playerId) {
 /**
  * Increment a player's credit.
  * @param {object} state the board state
- * @param {string} playerId the player it increment the credits for
+ * @param {string} playerId the player id to increment the credits for
  * @param {integer} credits how many credits to increment by
  * @returns the new deep-copied game state with the incremented credit amount
  */
@@ -121,11 +121,40 @@ function addCredits(state, playerId, credits) {
     return board;
 }
 
+/**
+ * Increment a player's ambition.
+ * @param {object} state the board state
+ * @param {string} playerId the player id to increment the ambition for
+ * @param {integer} ambition how many ambition to increment by
+ * @returns the new deep-copied game state with the incremented ambition amount
+ */
+function addAmbition(state, playerId, ambition) {
+    const inPlayPlayerIds = Object.keys(state["sectors"]);
+    if (!inPlayPlayerIds.includes(playerId)) {
+        throw new Error("Non-existent player id");
+    }
+
+    if (!Number.isInteger(ambition)) {
+        throw new Error("Ambition amount must be an integer");
+    }
+
+    if (ambition < 0) {
+        throw new Error("Ambition amount must be non-negative");
+    }
+
+    const board = R.clone(state);
+
+    board["sectors"][[playerId]]["ambition"] += ambition;
+
+    return board;
+}
+
 module.exports = {
     beginGame,
     shuffleDeck,
     drawVillainCard,
     addCredits,
+    addAmbition,
     getPlayerById,
     getPlayerIds,
 };
