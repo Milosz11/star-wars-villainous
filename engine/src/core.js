@@ -23,7 +23,7 @@ function getPlayerIdInTurn(state) {
  * Return the player object given by the playerId argument.
  * @param {object} state the board state
  * @param {string} playerId the id of the player (villain) to return
- * @returns a reference to the player sector identified by the id
+ * @returns a REFERENCE to the player sector identified by the id
  */
 function getPlayerById(state, playerId) {
     const inPlayPlayerIds = Object.keys(state["sectors"]);
@@ -32,6 +32,41 @@ function getPlayerById(state, playerId) {
     }
 
     return state["sectors"][[playerId]];
+}
+
+/**
+ * return the card object given by the cardId argument.
+ * @param {object} state the game state
+ * @param {string} cardId the id of the card to return
+ * @returns a REFERENCE to the card identified by the id
+ */
+function getCardById(state, cardId) {
+    if (typeof cardId != "string") {
+        throw new Error("Id must be a string");
+    }
+
+    // We don't expect the possibility of having up to a p10 now so this should be fine.
+    const playerId = cardId.substring(0, 2);
+
+    const player = getPlayerById(state, playerId);
+
+    const playerCards = [];
+
+    ["hand", "villain-deck", "villain-discard-pile", "fate-deck", "fate-discard-pile"].forEach(
+        (deck) => {
+            playerCards.push(...player[[deck]]);
+        }
+    );
+
+    const foundCard = playerCards.find((card) => {
+        return card["card-id"] == cardId;
+    });
+
+    if (foundCard == undefined) {
+        throw new Error("Non-existent card id");
+    } else {
+        return foundCard;
+    }
 }
 
 /**
@@ -164,6 +199,7 @@ module.exports = {
     drawVillainCard,
     addCredits,
     addAmbition,
+    getCardById,
     getPlayerById,
     getPlayerIdInTurn,
     getPlayerIds,
