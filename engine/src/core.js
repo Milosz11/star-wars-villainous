@@ -70,13 +70,36 @@ function getCardById(state, cardId) {
 }
 
 /**
- * Takes a newly instatiated game board and sets it up for play, shuffling decks, adding intial
+ * Takes a newly instantiated game board and sets it up for play, shuffling decks, adding intial
  * credits per game rules, and drawing the initial hand
- * @param {*} state
- * @returns
+ * @param {object} state the board state
+ * @returns the state of the board ready for play
  */
 function beginGame(state) {
-    return state;
+    let board = R.clone(state);
+
+    // Add credits
+    board = addCredits(board, "p2", 1);
+
+    // Shuffle villain and fate decks for each player
+    for (const playerId of getPlayerIds(board)) {
+        const player = getPlayerById(board, playerId);
+        const kvs1 = shuffleDeck(player["villain-deck"], board["seed"]);
+        player["villain-deck"] = kvs1["shuffled"];
+        board["seed"] = kvs1["seed"];
+        const kvs2 = shuffleDeck(player["fate-deck"], board["seed"]);
+        player["fate-deck"] = kvs2["shuffled"];
+        board["seed"] = kvs2["seed"];
+    }
+
+    // Draw 4 cards for each player
+    for (const playerId of getPlayerIds(board)) {
+        for (let i = 0; i < 4; i++) {
+            board = drawVillainCard(board, playerId);
+        }
+    }
+
+    return board;
 }
 
 /**
