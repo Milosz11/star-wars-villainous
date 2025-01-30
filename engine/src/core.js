@@ -71,7 +71,8 @@ function getCardById(state, cardId) {
 
 /**
  * Takes a newly instantiated game board and sets it up for play, shuffling decks, adding intial
- * credits per game rules, and drawing the initial hand
+ * credits per game rules, and drawing the initial hand. Also, calls the onBeginTurn callback for
+ * the first player.
  * @param {object} state the board state
  * @returns the state of the board ready for play
  */
@@ -98,6 +99,22 @@ function beginGame(state) {
             board = drawVillainCard(board, playerId);
         }
     }
+
+    return onBeginTurn(board, "p1");
+}
+
+function onBeginTurn(state, playerId) {
+    if (!getPlayerIds(state).includes(playerId)) {
+        throw new Error("Non-existent player id");
+    }
+
+    const board = addAmbition(state, playerId, 1);
+
+    board["counter"] = board["counter"] + 1;
+
+    // TODO set previous mover location
+
+    // TODO reset taken actions
 
     return board;
 }
@@ -218,6 +235,7 @@ function addAmbition(state, playerId, ambition) {
 
 module.exports = {
     beginGame,
+    onBeginTurn,
     shuffleDeck,
     drawVillainCard,
     addCredits,
