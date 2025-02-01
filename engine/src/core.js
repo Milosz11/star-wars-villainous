@@ -20,7 +20,8 @@ function getPlayerIdInTurn(state) {
 }
 
 /**
- * Return the player object given by the playerId argument.
+ * Return the player object given by the playerId argument. Throw an error when a non-existent
+ * ID is passed.
  * @param {object} state the board state
  * @param {string} playerId the id of the player (villain) to return
  * @returns a REFERENCE to the player sector identified by the id
@@ -143,6 +144,45 @@ function onBeginTurn(state, playerId) {
 }
 
 /**
+ * Execute all functionality that happens for a player who's ending their turn.
+ * This includes
+ *  * Drawing cards up until the player's current maximum hand size
+ * @param {object} state the game board
+ * @param {string} playerId the player id who is ending their turn
+ * @returns a new game state with the aforementioned functionality executed
+ */
+function onEndTurn(state, playerId) {
+    let board = R.clone(state);
+    const player = getPlayerById(board, playerId);
+
+    const numberCardsToDraw = getMaxHandSize(board, playerId) - player["hand"].length;
+    if (numberCardsToDraw > 0) {
+        for (let i = 0; i < numberCardsToDraw; i++) {
+            board = drawVillainCard(board, playerId);
+        }
+    }
+
+    return board;
+}
+
+/**
+ * Get the maximum current hand size for the player
+ * @param {object} state the game board
+ * @param {string} playerId the player to query
+ * @returns {number} an integer of the player's current maximum hand size
+ */
+function getMaxHandSize(state, playerId) {
+    const defaultMaxHandSize = 4;
+
+    // Certain cards may increase or decrease by an incremental or to a fixed amount.
+    // Figure a way to go through these, like General Grievous' Under Repair.
+
+    // TODO iterate through vehicles and reduce by 1 for every unengaged Hero Vehicle
+
+    return defaultMaxHandSize;
+}
+
+/**
  * Shuffle a list given a seed.
  * @param {any[]} toShuffle the list to shuffle
  * @param {string} seedStr the random seed string to use for the first shuffle
@@ -174,7 +214,8 @@ function shuffleDeck(toShuffle, seedStr) {
 
 /**
  * Draw 1 villain card from the player's villain deck and put it into the player's hand.
- * If the villain deck is empty, reshuffle the villain discard pile into the villain deck.
+ * If the villain deck is empty, reshuffle the villain discard pile into the villain deck,
+ * then draw 1 card.
  * @param {object} state the board state
  * @param {string} playerId the player to which draw a villain card for
  * @returns the new deep-copied game state with a villain card drawn
@@ -259,6 +300,8 @@ function addAmbition(state, playerId, ambition) {
 module.exports = {
     beginGame,
     onBeginTurn,
+    onEndTurn,
+    getMaxHandSize,
     shuffleDeck,
     drawVillainCard,
     addCredits,
