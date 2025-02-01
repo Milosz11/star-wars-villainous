@@ -1,4 +1,5 @@
 const { instantiateStartingBoardState, instantiateCustomBoardState } = require("../src/construct");
+const { getPlayerById } = require("../src/core");
 
 const availableVillains = ["Moff Gideon", "General Grievous", "Darth Vader"];
 
@@ -66,7 +67,8 @@ describe("instantiateStartingBoardState properly constructs initial game board",
 
     it("has proper keys in a sector", () => {
         const sector = board["sectors"]["p1"];
-        expect(sector).toHaveProperty("villain-mover-position", 0);
+        expect(sector).toHaveProperty("previous-villain-mover-location");
+        expect(sector).toHaveProperty("villain-mover-location");
         expect(sector).toHaveProperty("ambition", 0);
         expect(sector).toHaveProperty("credits", 0);
         expect(sector).toHaveProperty("locations");
@@ -349,6 +351,21 @@ describe("instantiateCustomBoardState correctly instantiates given custom villai
         expect(board["sectors"]["p1"]["credits"]).toBe(3);
     });
 
+    it("villain mover locations set properly", () => {
+        const board = instantiateCustomBoardState([
+            {
+                "villain-name": "Moff Gideon",
+                "previous-villain-mover-location": "The Bridge",
+                "villain-mover-location": "Nevarro City",
+            },
+        ]);
+
+        const player = getPlayerById(board, "p1");
+
+        expect(player["previous-villain-mover-location"]).toEqual("The Bridge");
+        expect(player["villain-mover-location"]).toEqual("Nevarro City");
+    });
+
     it("villain's decks are empty", () => {
         const board = instantiateCustomBoardState([
             { "villain-name": "Moff Gideon", "credits": 3 },
@@ -362,7 +379,7 @@ describe("instantiateCustomBoardState correctly instantiates given custom villai
         expect(villain["hand"]).toHaveLength(0);
     });
 
-    it("doesn't apply a non-deck or location key which is not credits, ambition, or villain-mover-position", () => {
+    it("doesn't apply a non-deck or location key which is not credits, ambition, or villain-mover-location", () => {
         const board = instantiateCustomBoardState([
             {
                 "villain-name": "Moff Gideon",

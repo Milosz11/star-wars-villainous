@@ -28,7 +28,20 @@ describe("onBeginTurn", () => {
         expect(newBoard["counter"]).toEqual(1);
     });
 
-    it.todo("previous mover location is set");
+    it("previous mover location is set", () => {
+        const board = instantiateCustomBoardState([
+            {
+                "villain-name": "Moff Gideon",
+                "previous-villain-mover-location": "The Bridge",
+                "villain-mover-location": "Tython",
+            },
+        ]);
+
+        const newBoard = onBeginTurn(board, "p1");
+        const player = getPlayerById(newBoard, "p1");
+
+        expect(player["previous-villain-mover-location"]).toEqual("Tython");
+    });
 
     it.todo("taken actions are cleared");
 });

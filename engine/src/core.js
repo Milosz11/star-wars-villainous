@@ -35,6 +35,16 @@ function getPlayerById(state, playerId) {
 }
 
 /**
+ * Get all current villain locations by name.
+ * @param {object} state the board state
+ * @param {string} playerId the query villain / player ID
+ * @returns a string list of all current locations belonging to player
+ */
+function getVillainLocationNames(state, playerId) {
+    return getPlayerById(state, playerId)["locations"].map((loc) => loc["name"]);
+}
+
+/**
  * return the card object given by the cardId argument.
  * @param {object} state the game state
  * @param {string} cardId the id of the card to return
@@ -103,16 +113,29 @@ function beginGame(state) {
     return onBeginTurn(board, "p1");
 }
 
+/**
+ * Execute all functionality that happens for a player who's starting their turn.
+ * This includes
+ *  * Gain one ambition (should not trigger game effects like 'on-gain-ambition')
+ *  * Increment the game turn counter
+ *  * Update the player's previous villain mover location to their current location
+ *  * Reset taken actions at the player's current location
+ * @param {object} state the game board
+ * @param {string} playerId the player id who is beginning their turn
+ * @returns a new game state with the aforementioned functionality executed
+ */
 function onBeginTurn(state, playerId) {
     if (!getPlayerIds(state).includes(playerId)) {
         throw new Error("Non-existent player id");
     }
 
+    // Our deep copy
     const board = addAmbition(state, playerId, 1);
 
     board["counter"] = board["counter"] + 1;
 
-    // TODO set previous mover location
+    const player = getPlayerById(board, playerId);
+    player["previous-villain-mover-location"] = player["villain-mover-location"];
 
     // TODO reset taken actions
 
@@ -244,4 +267,5 @@ module.exports = {
     getPlayerById,
     getPlayerIdInTurn,
     getPlayerIds,
+    getVillainLocationNames,
 };
