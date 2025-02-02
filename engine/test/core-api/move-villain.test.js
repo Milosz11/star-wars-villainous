@@ -11,6 +11,14 @@ describe("moveVillain", () => {
         }).toThrow("Non-existent player id");
     });
 
+    it("throws exception when player is not in turn", () => {
+        const board = instantiateCustomBoardState(["Moff Gideon", "General Grievous"]);
+
+        expect(() => {
+            const newBoard = moveVillain(board, "p2", "Florrum");
+        }).toThrow("Player is not in turn");
+    });
+
     it("throws exception on attempted second move", () => {
         const board = instantiateCustomBoardState([
             {

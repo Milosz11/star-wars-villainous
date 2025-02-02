@@ -20,14 +20,6 @@ describe("onBeginTurn", () => {
         expect(getPlayerById(newBoard, "p1")["ambition"]).toEqual(3);
     });
 
-    it("counter gets incremented", () => {
-        const board = instantiateCustomBoardState(["Moff Gideon"]);
-
-        const newBoard = onBeginTurn(board, "p1");
-
-        expect(newBoard["counter"]).toEqual(1);
-    });
-
     it("previous mover location is set", () => {
         const board = instantiateCustomBoardState([
             {

@@ -113,7 +113,7 @@ function instantiateCustomBoardState(villainsOrVillainNames, kvs) {
 
     return {
         "seed": seed || "lcrgyrylrvmqjwkboeauqkjqwmvaoeux",
-        "counter": 0,
+        "counter": 1,
         "player-id-in-turn": "p1",
         "sectors": sectors,
     };
@@ -268,7 +268,7 @@ function instantiateStartingBoardState(villainNames, kvs) {
 
     return {
         "seed": seed || "uatsnoehuyptscroehntuoasaotnehue",
-        "counter": 0,
+        "counter": 1,
         "player-id-in-turn": "p1",
         "sectors": sectors,
     };

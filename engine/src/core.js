@@ -118,7 +118,6 @@ function beginGame(state) {
  * Execute all functionality that happens for a player who's starting their turn.
  * This includes
  *  * Gain one ambition (should not trigger game effects like 'on-gain-ambition')
- *  * Increment the game turn counter
  *  * Update the player's previous villain mover location to their current location
  *  * Reset taken actions at the player's current location
  * @param {object} state the game board
@@ -132,8 +131,6 @@ function onBeginTurn(state, playerId) {
 
     // Our deep copy
     const board = addAmbition(state, playerId, 1);
-
-    board["counter"] = board["counter"] + 1;
 
     const player = getPlayerById(board, playerId);
     player["previous-villain-mover-location"] = player["villain-mover-location"];

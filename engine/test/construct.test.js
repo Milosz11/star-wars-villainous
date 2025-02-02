@@ -60,7 +60,7 @@ describe("instantiateStartingBoardState properly constructs initial game board",
 
     it("has proper first level keys", () => {
         expect(board).toHaveProperty("player-id-in-turn", "p1");
-        expect(board).toHaveProperty("counter", 0);
+        expect(board).toHaveProperty("counter", 1);
         expect(board).toHaveProperty("sectors", expect.any(Object));
         expect(board).toHaveProperty("seed", expect.any(String));
     });
@@ -290,7 +290,7 @@ describe("instantiateCustomBoardState properly constructs initial game board", (
 
     it("has proper first level keys", () => {
         expect(board).toHaveProperty("player-id-in-turn", "p1");
-        expect(board).toHaveProperty("counter", 0);
+        expect(board).toHaveProperty("counter", 1);
         expect(board).toHaveProperty("sectors", expect.any(Object));
         expect(board).toHaveProperty("seed", expect.any(String));
     });
