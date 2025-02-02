@@ -81,6 +81,25 @@ function getCardById(state, cardId) {
 }
 
 /**
+ * Get a player's location identified by the passed name. Throws error on invalid ID or location name.
+ * @param {object} state the game board
+ * @param {string} playerId player to query
+ * @param {string} locationName the name of the location to get
+ * @returns a REFERENCE to the queried location
+ */
+function getLocationByName(state, playerId, locationName) {
+    const player = getPlayerById(state, playerId);
+
+    const location = player["locations"].find((loc) => loc["name"] == locationName);
+
+    if (location) {
+        return location;
+    } else {
+        throw new Error("Non-existent location provided");
+    }
+}
+
+/**
  * Takes a newly instantiated game board and sets it up for play, shuffling decks, adding intial
  * credits per game rules, and drawing the initial hand. Also, calls the onBeginTurn callback for
  * the first player.
@@ -307,5 +326,6 @@ module.exports = {
     getPlayerById,
     getPlayerIdInTurn,
     getPlayerIds,
+    getLocationByName,
     getVillainLocationNames,
 };
