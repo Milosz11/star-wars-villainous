@@ -5,7 +5,14 @@ const {
     getVillainLocationNames,
     onEndTurn,
     onBeginTurn,
+    getPlayerIdInTurn,
+    getLocationByName,
 } = require("./core");
+
+/**
+ * Functions with a '_' at the beginning of their name are not intended to be called from outside
+ * this file. However, they must be exported for testing.
+ */
 
 /**
  * Move a player's villain mover to a new location.
@@ -82,7 +89,48 @@ function endTurn(state, playerId) {
     return board;
 }
 
+/**
+ * Determine if a player could take an action. Test for player id in turn, that the player has
+ * moved this turn, any blocking hero cards, and other sanity checks.
+ * If an action is determined valid, return true, otherwise throw an error.
+ * @param {object} state the game board
+ * @param {string} playerId player to take an action for
+ * @param {string} action the action to test as written on the board
+ * @returns true if taking the action is valid, throws error otherwise
+ */
+function _canTakeAction(state, playerId, action) {
+    // check player id
+    const player = getPlayerById(state, playerId);
+
+    // check player in turn
+    if (getPlayerIdInTurn(state) != playerId) {
+        throw new Error("Player is not in turn");
+    }
+
+    // check player has moved
+    if (player["villain-mover-location"] == player["previous-villain-mover-location"]) {
+        throw new Error("Player must move before taking actions");
+    }
+
+    // check current location has action
+    const currentLocation = getLocationByName(state, playerId, player["villain-mover-location"]);
+    if (!currentLocation["actions"].includes(action)) {
+        throw new Error("Location does not have specified action");
+    }
+
+    // check if action is blocked (actions in villain definition are in English reading order,
+    // so the hero-side actions are the first 2 in the list)
+    if (currentLocation["actions"].indexOf(action) < 2) {
+        if (currentLocation["hero-side-cards"].some((card) => card["card-type"] == "Hero")) {
+            throw new Error("The action is blocked by a Hero card");
+        }
+    }
+
+    return true;
+}
+
 module.exports = {
+    _canTakeAction,
     moveVillain,
     endTurn,
 };
