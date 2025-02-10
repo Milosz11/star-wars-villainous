@@ -286,6 +286,33 @@ function addCredits(state, playerId, credits) {
 }
 
 /**
+ * Subtract a player's credits amount, like when playing a card, in place.
+ * @param {object} state the game board
+ * @param {string} playerId the player spending credits
+ * @param {integer} credits number of credits player is spending
+ * @returns a REFERENCE to the modified board
+ */
+function spendCredits(state, playerId, credits) {
+    if (!Number.isInteger(credits)) {
+        throw new Error("Credits must be an integer");
+    }
+
+    if (credits < 0) {
+        throw new Error("Credits must be non-negative");
+    }
+
+    const player = getPlayerById(state, playerId);
+
+    if (credits > player["credits"]) {
+        throw new Error("Player does not have enough credits");
+    }
+
+    player["credits"] = player["credits"] - credits;
+
+    return state;
+}
+
+/**
  * Increment a player's ambition.
  * @param {object} state the board state
  * @param {string} playerId the player id to increment the ambition for
@@ -322,6 +349,7 @@ module.exports = {
     drawVillainCard,
     addCredits,
     addAmbition,
+    spendCredits,
     getCardById,
     getPlayerById,
     getPlayerIdInTurn,

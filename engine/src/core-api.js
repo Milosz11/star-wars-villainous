@@ -7,6 +7,9 @@ const {
     onBeginTurn,
     getPlayerIdInTurn,
     getLocationByName,
+    addCredits,
+    getCardById,
+    spendCredits,
 } = require("./core");
 
 /**
@@ -112,8 +115,9 @@ function _canTakeAction(state, playerId, action) {
         throw new Error("Player must move before taking actions");
     }
 
-    // check current location has action
     const currentLocation = getLocationByName(state, playerId, player["villain-mover-location"]);
+
+    // check current location has action
     if (!currentLocation["actions"].includes(action)) {
         throw new Error("Location does not have specified action");
     }
@@ -126,11 +130,164 @@ function _canTakeAction(state, playerId, action) {
         }
     }
 
+    // check if the action was already taken
+    if (currentLocation["taken-actions"].includes(action)) {
+        throw new Error("This action was already taken");
+    }
+
     return true;
+}
+
+/**
+ * Handles generic information regarding an action, like checking if it could be taken and adding
+ * it to the location's taken-actions list.
+ * This function calls the specific action handler, propagating the parameter 'kvs', where
+ * additional information for that action may be passed.
+ * @param {object} board the game board
+ * @param {string} playerId the player taking the action
+ * @param {string} action the action as written on the game board
+ * @param {object} kvs a dictionary of additional key-values as required by the specific
+ * action function. For example, the "Play a Card" actions needs a "card-id" key with a value
+ * of the id of the desired card to play.
+ * @returns a new game board with the passed action executed
+ */
+function takeAction(state, playerId, action, kvs) {
+    _canTakeAction(state, playerId, action);
+
+    let board = R.clone(state);
+
+    switch (action) {
+        case "Collect 1 Credit":
+            board = _collectCredits(board, playerId, 1);
+            break;
+
+        case "Collect 2 Credits":
+            board = _collectCredits(board, playerId, 2);
+            break;
+
+        case "Collect 3 Credits":
+            board = _collectCredits(board, playerId, 3);
+            break;
+
+        case "Play a Card":
+            board = _playCard(board, playerId, kvs["card-id"], kvs);
+            break;
+
+        default:
+            throw new Error("Bad action string specified");
+    }
+
+    const player = getPlayerById(board, playerId);
+    const location = getLocationByName(board, playerId, player["villain-mover-location"]);
+    location["taken-actions"].push(action);
+
+    return board;
+}
+
+/**
+ * Perform a Collect Credits action for the specified player. For every card in play,
+ * call its on-collect-credits callback, if applicable. Return a new board.
+ * @param {object} state the game board
+ * @param {string} playerId the player performing the action
+ * @param {int} credits number of credits to gain
+ * @returns a new game board
+ */
+function _collectCredits(state, playerId, credits) {
+    if (credits < 1 || credits > 3) {
+        throw new Error("Bad credit amount");
+    }
+
+    let board = addCredits(state, playerId, credits);
+
+    // TODO loop on each card in play and activate on-collect-credits (state, playerId, thisId, kvs)
+    // kvs = { "credits-collected": creditAmount }
+    // make sure to not activate this player's cards (will depend on every card's wording)
+
+    return board;
+}
+
+/**
+ * Perform a Play a Card action for the specified player. Play a Card is used to play a card that
+ * costs credits. Activate this card's on-play-card, if applicable.
+ * For every other card in play, call its on-other-card-played callback, if applicable.
+ * Return a new board.
+ * @param {object} state the game board
+ * @param {string} playerId the player performing the action
+ * @param {string} cardId the card id to play from the hand of the player
+ * @param {object} kvs additional information for the card being played. If the card is of type
+ * Ally or Vehicle, the key "location" is required. If the type is Item, a "location" or "card-id"
+ * of a card to attach to is required, depending on the specific item. For other cards, their unique
+ * information needs to be provided
+ * @returns a new game board
+ */
+function _playCard(state, playerId, cardId, kvs) {
+    let board = R.clone(state);
+
+    // check player
+    const player = getPlayerById(board, playerId);
+    // check card
+    const card = getCardById(board, cardId);
+
+    // check card belongs to player
+    if (playerId.substring(0, 2) != cardId.substring(0, 2)) {
+        throw new Error("Card does not belong to player");
+    }
+
+    // check card costs credits
+    if (card["credit-cost"] == undefined) {
+        throw new Error("Can only play cards that cost credits with a Play a Card action");
+    }
+
+    // if the card is an ally or vehicle, ensure location is provided
+    if (card["card-type"] == "Ally" || card["card-type"] == "Vehicle") {
+        if (!kvs["location"]) {
+            // empty string also satisfies this condition
+            throw new Error("Ally or Vehicle needs a location to play to");
+        }
+    }
+
+    // if the card is an item, ensure location or other card-id depending on other item card keys
+    if (card["card-type"] == "Item") {
+        // TODO not yet implemented
+    }
+
+    // subtract credits
+    spendCredits(board, playerId, card["credit-cost"]);
+
+    // remove from hand
+    player["hand"] = player["hand"].filter((c) => c["card-id"] != cardId);
+
+    if (card["card-type"] == "Ally" || card["card-type"] == "Vehicle") {
+        // play to location
+        const locationToPlayCard = getLocationByName(board, playerId, kvs["location"]);
+        locationToPlayCard["villain-side-cards"].push(card);
+    } else if (card["card-type"] == "Item") {
+        // depending on item, play to location or other card
+        // NOT YET IMPLEMENTED
+        // if card is item, add to location, ally or vehicle then remove from hand OR discard
+    } else {
+        // add to discard pile
+        // treating deck like a stack, first element is on top
+        player["villain-discard-pile"].unshift(card);
+    }
+
+    // perform the card's on-play-card callback function
+    if (card["on-play-card"]) {
+        const onPlayCardFn = card["on-play-card"];
+        board = onPlayCardFn(board, playerId, cardId, kvs); // assume this returns a new state
+    }
+
+    // TODO iterate every card in the game except this one, and call on-other-card-played callback
+    // (state, playerId, thisId, kvs) kvs = { "card-id" : cardId }
+
+    return board;
 }
 
 module.exports = {
     _canTakeAction,
+    _collectCredits,
+    _playCard,
     moveVillain,
     endTurn,
+    takeAction,
 };

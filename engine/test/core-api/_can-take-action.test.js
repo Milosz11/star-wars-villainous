@@ -1,5 +1,5 @@
 const { instantiateCustomBoardState } = require("../../src/construct");
-const { _canTakeAction } = require("../../src/core-api");
+const { _canTakeAction, takeAction } = require("../../src/core-api");
 
 describe("canTakeAction", () => {
     it("throws exception on non-existent player id", () => {
@@ -8,7 +8,7 @@ describe("canTakeAction", () => {
         ]);
 
         expect(() => {
-            const newBoard = _canTakeAction(board, "a1", "Play a Card");
+            _canTakeAction(board, "a1", "Play a Card");
         }).toThrow("Non-existent player id");
     });
 
@@ -19,7 +19,7 @@ describe("canTakeAction", () => {
         ]);
 
         expect(() => {
-            const newBoard = _canTakeAction(board, "p2", "Ambition");
+            _canTakeAction(board, "p2", "Ambition");
         }).toThrow("Player is not in turn");
     });
 
@@ -33,7 +33,7 @@ describe("canTakeAction", () => {
         ]);
 
         expect(() => {
-            const newBoard = _canTakeAction(board, "p1", "Play a Card");
+            _canTakeAction(board, "p1", "Play a Card");
         }).toThrow("Player must move before taking actions");
     });
 
@@ -43,7 +43,7 @@ describe("canTakeAction", () => {
         ]);
 
         expect(() => {
-            const newBoard = _canTakeAction(board, "p1", "Collect 2 Credits");
+            _canTakeAction(board, "p1", "Collect 2 Credits");
         }).toThrow("Location does not have specified action");
     });
 
@@ -57,8 +57,23 @@ describe("canTakeAction", () => {
         ]);
 
         expect(() => {
-            const newBoard = _canTakeAction(board, "p1", "Ambition");
+            _canTakeAction(board, "p1", "Ambition");
         }).toThrow("The action is blocked by a Hero card");
+    });
+
+    it("throws exception if the action was already taken", () => {
+        const board = instantiateCustomBoardState([
+            {
+                "villain-name": "Moff Gideon",
+                "villain-mover-location": "Tython",
+            },
+        ]);
+
+        const newBoard = takeAction(board, "p1", "Collect 2 Credits", {});
+
+        expect(() => {
+            _canTakeAction(newBoard, "p1", "Collect 2 Credits");
+        }).toThrow("This action was already taken");
     });
 
     it("successfully returns true when no rule is violated", () => {
