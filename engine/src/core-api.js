@@ -10,6 +10,9 @@ const {
     addCredits,
     getCardById,
     spendCredits,
+    getCardSide,
+    getCardLocation,
+    getCardStrength,
 } = require("./core");
 
 /**
@@ -172,6 +175,9 @@ function takeAction(state, playerId, action, kvs) {
         case "Play a Card":
             board = _playCard(board, playerId, kvs["card-id"], kvs);
             break;
+        case "Vanquish":
+            board = _vanquish(board, playerId, kvs["vanquished-id"], kvs["vanquisher-ids"], kvs);
+            break;
 
         default:
             throw new Error("Bad action string specified");
@@ -283,10 +289,94 @@ function _playCard(state, playerId, cardId, kvs) {
     return board;
 }
 
+/**
+ * Perform a Vanquish action. A Vanquish action uses one or more Allies to defeat a character,
+ * usually a Hero.
+ * @param {object} state the game board
+ * @param {string} playerId the player performing the action
+ * @param {string} vanquishedId the id of the hero-side card being vanquished
+ * @param {string[]} vanquisherIds the array of ids of villain-side cards vanquishing the hero-side card
+ * @param {object} kvs additional parameters for the vanquish action
+ * @returns a new game board
+ */
+function _vanquish(state, playerId, vanquishedId, vanquisherIds, kvs) {
+    getPlayerById(state, playerId);
+
+    // check all ids belong to player
+    const allVanquishCardIds = vanquisherIds.concat(vanquishedId);
+    if (allVanquishCardIds.some((id) => id.substring(0, 2) != playerId)) {
+        throw new Error("Player does not own card");
+    }
+
+    // check vanquished is on hero side
+    if (getCardSide(state, vanquishedId) != "hero") {
+        throw new Error("The card to be vanquished is not on the hero side");
+    }
+
+    // check vanquishers are on the villain side
+    if (vanquisherIds.some((id) => getCardSide(state, id) != "villain")) {
+        throw new Error("The vanquishing cards must be on the villain side");
+    }
+
+    // check that all cards in the same location (except ones that can vanquish adjacent locations)
+    const vanquishLocationName = getCardLocation(state, vanquishedId)["name"];
+    if (
+        vanquisherIds
+            .map((id) => getCardLocation(state, id)["name"])
+            .some((locationName) => locationName != vanquishLocationName)
+    ) {
+        throw new Error("All vanquishers are not at the location of the card to be vanquished");
+    }
+
+    // check all cards have a strength attribute
+    if (
+        allVanquishCardIds
+            .map((id) => getCardById(state, id))
+            .filter((card) => card["card-type"] != "Vehicle")
+            .some((card) => !card.hasOwnProperty("strength"))
+    ) {
+        throw new Error("The cards do not have a strength attribute");
+    }
+
+    // check strength of allies and hero
+    const heroSideStrength = getCardStrength(state, vanquishedId);
+    const villainSideStrength = vanquisherIds.reduce((acc, id) => {
+        return acc + getCardStrength(state, id);
+    }, 0);
+    if (villainSideStrength < heroSideStrength) {
+        throw new Error(
+            "The villain-side cards are not strong enough to defeat the hero-side card"
+        );
+    }
+
+    const board = R.clone(state);
+    const player = getPlayerById(board, playerId);
+    const vanquishLocation = getLocationByName(board, playerId, vanquishLocationName);
+
+    // remove hero side card to fate discard pile
+    const vanquishedCard = getCardById(board, vanquishedId);
+    vanquishLocation["hero-side-cards"] = vanquishLocation["hero-side-cards"].filter(
+        (card) => card["card-id" != vanquishedId]
+    );
+    player["fate-discard-pile"].unshift(vanquishedCard);
+
+    // remove all vanquisher cards to villain discard pile
+    const vanquisherCards = vanquisherIds.map((id) => getCardById(board, id));
+    vanquishLocation["villain-side-cards"] = vanquishLocation["villain-side-cards"].filter(
+        (card) => {
+            !vanquisherIds.includes(card["card-id"]);
+        }
+    );
+    player["villain-discard-pile"].unshift(...vanquisherCards);
+
+    return board;
+}
+
 module.exports = {
     _canTakeAction,
     _collectCredits,
     _playCard,
+    _vanquish,
     moveVillain,
     endTurn,
     takeAction,

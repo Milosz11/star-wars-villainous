@@ -22,7 +22,7 @@ describe("getCardById", () => {
         }).toThrow("Non-existent card id");
     });
 
-    it("gets the proper card 1", () => {
+    it("gets the proper card 1 - player 1 villain deck", () => {
         const board = instantiateCustomBoardState([
             {
                 "villain-name": "Moff Gideon",
@@ -35,7 +35,7 @@ describe("getCardById", () => {
         expect(card).toHaveProperty("name", "Doctor Pershing");
     });
 
-    it("gets the proper card 2", () => {
+    it("gets the proper card 2 - player 2 multiple decks", () => {
         const board = instantiateCustomBoardState([
             {
                 "villain-name": "Moff Gideon",
@@ -51,5 +51,40 @@ describe("getCardById", () => {
         const card = getCardById(board, "p2c4");
 
         expect(card).toHaveProperty("name", "Anakin Skywalker");
+    });
+
+    it("gets the proper card 3 - villain side location", () => {
+        const board = instantiateCustomBoardState([
+            {
+                "villain-name": "Moff Gideon",
+                "locations": {
+                    "Nevarro City": {
+                        "villain-side-cards": ["Death Troopers"],
+                    },
+                },
+            },
+        ]);
+
+        const card = getCardById(board, "p1c1");
+
+        expect(card).toHaveProperty("name", "Death Troopers");
+    });
+
+    it("gets the proper card 4 - hero side location", () => {
+        const board = instantiateCustomBoardState([
+            {
+                "villain-name": "Moff Gideon",
+                "locations": {
+                    "Nevarro City": {
+                        "hero-side-cards": ["The Mandalorian"],
+                        "villain-side-cards": ["Death Troopers"],
+                    },
+                },
+            },
+        ]);
+
+        const card = getCardById(board, "p1c1");
+
+        expect(card).toHaveProperty("name", "The Mandalorian");
     });
 });

@@ -46,7 +46,7 @@ function getVillainLocationNames(state, playerId) {
 }
 
 /**
- * return the card object given by the cardId argument.
+ * Retrieve a card given by 'cardId' from anywhere on the board.
  * @param {object} state the game state
  * @param {string} cardId the id of the card to return
  * @returns a REFERENCE to the card identified by the id
@@ -68,6 +68,11 @@ function getCardById(state, cardId) {
             playerCards.push(...player[[deck]]);
         }
     );
+
+    for (const location of player["locations"]) {
+        playerCards.push(...location["hero-side-cards"]);
+        playerCards.push(...location["villain-side-cards"]);
+    }
 
     const foundCard = playerCards.find((card) => {
         return card["card-id"] == cardId;
@@ -96,6 +101,88 @@ function getLocationByName(state, playerId, locationName) {
         return location;
     } else {
         throw new Error("Non-existent location provided");
+    }
+}
+
+/**
+ * Return whether a card is on the 'villain' or 'hero' side. Throw an error if the card
+ * is not at a sector location.
+ * @param {object} state the game board
+ * @param {string} cardId the card to query
+ * @returns 'villain' if the card is on the villain side of the sector,
+ * or 'hero' if the card is on the hero side of the sector
+ */
+function getCardSide(state, cardId) {
+    // for existence check
+    getCardById(state, cardId);
+
+    const player = getPlayerById(state, cardId.substring(0, 2));
+
+    for (const location of player["locations"]) {
+        if (location["villain-side-cards"].map((c) => c["card-id"]).includes(cardId)) {
+            return "villain";
+        } else if (location["hero-side-cards"].map((c) => c["card-id"]).includes(cardId)) {
+            return "hero";
+        }
+    }
+
+    throw new Error("Card is not at a sector location");
+}
+
+/**
+ * Get the location object of a card
+ * @param {object} state the game board
+ * @param {string} cardId card to query
+ * @returns a REFEREENCE to the location object where the queried card is at
+ */
+function getCardLocation(state, cardId) {
+    getCardById(state, cardId);
+
+    const player = getPlayerById(state, cardId.substring(0, 2));
+
+    for (const location of player["locations"]) {
+        if (
+            location["villain-side-cards"].map((c) => c["card-id"]).includes(cardId) ||
+            location["hero-side-cards"].map((c) => c["card-id"]).includes(cardId)
+        ) {
+            return location;
+        }
+    }
+
+    throw new Error("Card is not at a sector location");
+}
+
+/**
+ * Get the current Vanquish strength of a card with a 'strength' attribute.
+ * @param {object} state the game board
+ * @param {string} cardId the card to query
+ * @returns The sum of the card's innate strength, additional strength (which may be negative)
+ * granted by card effects, and any additional/less strength as based on the card's mechanics.
+ * If the strength calculation would be negative, return 0.
+ */
+function getCardStrength(state, cardId) {
+    const card = getCardById(state, cardId);
+
+    if (!card.hasOwnProperty("strength")) {
+        throw new Error("The card does not have a strength attribute");
+    }
+    if (!card.hasOwnProperty("additional-strength")) {
+        throw new Error("The card does not have an additional-strength attribute");
+    }
+
+    let sum = card["strength"];
+
+    sum += card["additional-strength"];
+
+    if (card["get-temporary-strength"]) {
+        const getTemporaryStrengthFn = card["get-temporary-strength"];
+        sum += getTemporaryStrengthFn(state, cardId);
+    }
+
+    if (sum < 0) {
+        return 0;
+    } else {
+        return sum;
     }
 }
 
@@ -154,7 +241,17 @@ function onBeginTurn(state, playerId) {
     const player = getPlayerById(board, playerId);
     player["previous-villain-mover-location"] = player["villain-mover-location"];
 
-    // TODO reset taken actions
+    // Reset taken actions
+    if (getVillainLocationNames(board, playerId).includes(player["villain-mover-location"])) {
+        // this check ensures getLocationByName doesn't throw when mover location is "" (a player's
+        // first turn or when testing)
+        const currentLocation = getLocationByName(
+            board,
+            playerId,
+            player["villain-mover-location"]
+        );
+        currentLocation["taken-actions"] = [];
+    }
 
     return board;
 }
@@ -351,6 +448,9 @@ module.exports = {
     addAmbition,
     spendCredits,
     getCardById,
+    getCardSide,
+    getCardLocation,
+    getCardStrength,
     getPlayerById,
     getPlayerIdInTurn,
     getPlayerIds,

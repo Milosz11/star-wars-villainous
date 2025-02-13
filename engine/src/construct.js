@@ -200,6 +200,15 @@ function instantiateCustomVillain(villainDefinition) {
         const villainSideCardNames =
             (passedLocationDict[[locationName]] || {})["villain-side-cards"] || [];
 
+        const actions = location["actions"];
+        const takenActions = (passedLocationDict[[locationName]] || {})["taken-actions"] || [];
+        if (takenActions.some((takenAction) => !actions.includes(takenAction))) {
+            // TODO in the future, it makes sense to check if any card at this location
+            // has an action that isn't at in the location's base actions, but that would
+            // require moving this logic down below the card instantiations
+            throw new Error("Action does not exists for this location");
+        }
+
         let updatedLocation;
         try {
             updatedLocation = Object.assign(location, {
@@ -209,6 +218,7 @@ function instantiateCustomVillain(villainDefinition) {
                 "villain-side-cards": villainSideCardNames.map((cardName) => {
                     return instantiateCard(villainDefinition["villain-name"], cardName);
                 }),
+                "taken-actions": takenActions,
             });
         } catch (_) {
             throw new Error("Non-existent cards provided");

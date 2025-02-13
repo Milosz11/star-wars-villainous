@@ -1,5 +1,5 @@
 const { instantiateStartingBoardState, instantiateCustomBoardState } = require("../src/construct");
-const { getPlayerById } = require("../src/core");
+const { getPlayerById, getLocationByName } = require("../src/core");
 
 const availableVillains = ["Moff Gideon", "General Grievous", "Darth Vader"];
 
@@ -266,6 +266,21 @@ describe("instantiateCustomBoardState throws Error on invalid arguments", () => 
                 },
             ]);
         }).toThrow("Non-existent cards provided");
+    });
+
+    it("bad action at location", () => {
+        expect(() => {
+            instantiateCustomBoardState([
+                {
+                    "villain-name": "Moff Gideon",
+                    "locations": {
+                        "Nevarro City": {
+                            "taken-actions": ["Fate"],
+                        },
+                    },
+                },
+            ]);
+        }).toThrow("Action does not exists for this location");
     });
 
     it("seed length invalid type", () => {
@@ -551,5 +566,22 @@ describe("instantiateCustomBoardState properly creates locations", () => {
         expect(theBridge["hero-side-cards"][0]).toHaveProperty("card-type", "Hero");
         expect(theBridge["hero-side-cards"][1]).toHaveProperty("name", "Bo-Katan Kryze");
         expect(theBridge["hero-side-cards"][1]).toHaveProperty("strength", 3);
+    });
+
+    it("taken actions are added to location", () => {
+        const board = instantiateCustomBoardState([
+            {
+                "villain-name": "Moff Gideon",
+                "locations": {
+                    "The Bridge": {
+                        "taken-actions": ["Ambition", "Discard Cards"],
+                    },
+                },
+            },
+        ]);
+
+        const theBridge = getLocationByName(board, "p1", "The Bridge");
+
+        expect(theBridge["taken-actions"]).toEqual(["Ambition", "Discard Cards"]);
     });
 });

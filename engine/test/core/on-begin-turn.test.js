@@ -1,5 +1,5 @@
 const { instantiateCustomBoardState } = require("../../src/construct");
-const { onBeginTurn, getPlayerById } = require("../../src/core");
+const { onBeginTurn, getPlayerById, getLocationByName } = require("../../src/core");
 
 describe("onBeginTurn", () => {
     it("throws error on non-existent player id", () => {
@@ -35,5 +35,22 @@ describe("onBeginTurn", () => {
         expect(player["previous-villain-mover-location"]).toEqual("Tython");
     });
 
-    it.todo("taken actions are cleared");
+    it("taken actions are cleared", () => {
+        const board = instantiateCustomBoardState([
+            {
+                "villain-name": "Moff Gideon",
+                "villain-mover-location": "The Bridge",
+                "locations": {
+                    "The Bridge": {
+                        "taken-actions": ["Fate", "Play a Card"],
+                    },
+                },
+            },
+        ]);
+
+        const newBoard = onBeginTurn(board, "p1");
+        const location = getLocationByName(newBoard, "p1", "The Bridge");
+
+        expect(location["taken-actions"]).toEqual([]);
+    });
 });
