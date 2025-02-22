@@ -1,18 +1,10 @@
-const express = require("express");
-const cors = require("cors");
-const app = express();
-const port = 3000;
+const expressApp = require("./server/http/http-server");
+const createWebSocketServer = require("./server/ws/ws-server");
 
-app.use(
-    cors({
-        origin: "http://localhost:5173",
-    })
-);
+const PORT = 3000;
 
-const gameRouter = require("./controllers/game-controller");
-
-app.use("/game", gameRouter);
-
-app.listen(port, () => {
-    console.log(`Star Wars Villainous engine running on port ${port}`);
+expressApp.listen(PORT, () => {
+    console.log(`Star Wars Villainous express app running on port ${PORT}`);
 });
+
+createWebSocketServer(4000);

@@ -49,6 +49,10 @@ function NewGame() {
                     className={"me-4 btn btn-primary" + (startButtonDisabled ? " disabled" : "")}
                     onClick={(_event) => {
                         console.log(selectedPlayerVillain + ", " + selectedOpponentVillain);
+                        const socket = new WebSocket("ws://localhost:4000");
+                        socket.addEventListener("open", (_event) => {
+                            socket.send("Hello Server!");
+                        });
                     }}
                 >
                     Start Game

@@ -1,5 +1,5 @@
 const fs = require("node:fs");
-const { instantiateStartingBoardState } = require("../src/construct");
+const { instantiateStartingBoardState } = require("../../../src/construct");
 
 module.exports = (req, res) => {
     try {
