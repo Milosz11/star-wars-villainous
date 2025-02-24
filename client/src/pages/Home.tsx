@@ -17,12 +17,19 @@ function Home() {
                 <p className="mb-0">Milosz Dabrowski</p>
             </div>
             <div className="mt-4">
-                <Link to="/new-game">
-                    <button className="btn btn-primary">Start New Game</button>
+                <h2>Multiplayer</h2>
+                <Link to="/lobby" state={{ ip: "localhost", restApiPort: "3000", wsPort: "4000" }}>
+                    <button className="btn btn-primary me-2">Create Game Lobby</button>
                 </Link>
-                <h6 className="my-2">OR</h6>
-                <Link to="/load-game">
-                    <button className="btn btn-primary">Loading Existing Game</button>
+                <Link to="/">
+                    <button className="btn btn-primary ms-2">Join Game (NYI)</button>
+                </Link>
+                <h2>Singleplayer</h2>
+                <Link to="/">
+                    <button className="btn btn-primary me-2">Create Game (NYI)</button>
+                </Link>
+                <Link to="/">
+                    <button className="btn btn-primary ms-2">Load Game (NYI)</button>
                 </Link>
             </div>
         </div>

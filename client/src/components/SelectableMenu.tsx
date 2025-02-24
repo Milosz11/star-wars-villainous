@@ -2,17 +2,20 @@ import { useEffect, useState } from "react";
 
 interface Props {
     items: string[];
-    onSelectItem: (item: string) => void;
+    onSelectItem: (item: string | null) => void;
 }
 
 function SelectableMenu({ items, onSelectItem }: Props) {
     const [selectedIndex, setSelectedIndex] = useState(-1);
 
-    useEffect(() => {
-        if (selectedIndex >= 0) {
-            onSelectItem(items[selectedIndex]);
-        }
-    }, [items]);
+    // If the items prop changes, reset the selection
+    const [previousItems, setPreviousItems] = useState(items); // TODO will have to test this when
+    // displaying menus of the same list where one changes the other
+    if (items !== previousItems) {
+        setPreviousItems(items);
+        setSelectedIndex(-1);
+        onSelectItem(null);
+    }
 
     return (
         <>
