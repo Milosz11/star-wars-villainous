@@ -26,12 +26,12 @@ function create(socket, _msg, clients, sessions) {
     const gameId = Object.keys(sessions).length.toString();
     // generate player id
     const playerId = "p1";
-    // insert into clients: socket -> { gameId, playerId }
+    // insert into clients: socket -> { game_id, player_id }
     clients[[socket]] = {
         "game_id": gameId,
         "player_id": playerId,
     };
-    // insert into sessions: gameId -> { hostId, players: playerId -> { socket, villain, isReady }, maxPlayers }
+    // insert into sessions: game_id -> { host_id, players: player_id -> { socket, villain, is_ready }, max_players }
     const session = {
         "host_id": playerId,
         "max_players": 2,
