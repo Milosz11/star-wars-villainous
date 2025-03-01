@@ -10,7 +10,7 @@ interface Session {
     players: {
         playerId: {
             villain: string;
-            isReady: boolean;
+            is_ready: boolean;
         };
     };
 }
@@ -68,6 +68,10 @@ function Lobby() {
                     })
                 );
                 playerInputtedJoinCode = null;
+                // TODO add a else if checking if the game id session storage exists, if so user
+                // was part of a game and we want to rejoin on that game
+                // also may want to check that clientid is truthy as well
+                // if either are invalid, default to creating game?
             } else {
                 // Creating new lobby
                 ws.current?.send(JSON.stringify({ "msg_type": "lobby", "msg_subtype": "create" }));
@@ -112,25 +116,53 @@ function Lobby() {
         );
     }
 
+    function onSetReady(isReady: boolean) {
+        ws.current?.send(
+            JSON.stringify({
+                "msg_type": "lobby",
+                "msg_subtype": "ready",
+                "join_code": lobby?.["join_code"],
+                "client_id": clientId,
+                "is_ready": isReady,
+            })
+        );
+    }
+
     return (
         <>
             {lobby && (
                 <div className="row g-3">
-                    {Object.entries(lobby["players"]).map(([playerId, { villain, isReady }]) => {
+                    {Object.entries(lobby["players"]).map(([playerId, { villain, is_ready }]) => {
                         return (
-                            <div className="col g-3" key={playerId} style={{ maxWidth: "360px" }}>
+                            <div className="col g-3" key={playerId} style={{ maxWidth: "540px" }}>
                                 <LobbyCard
                                     clientName={playerId}
                                     villain={villain}
-                                    isReady={isReady}
+                                    isReady={is_ready}
                                 />
+                                {/* If the player corresponds to the current client */}
                                 {playerId == clientId && (
-                                    <SelectableMenu
-                                        items={villains}
-                                        onSelectItem={onSelectVillain}
-                                    />
+                                    <>
+                                        {/* Villain selection menu */}
+                                        <SelectableMenu
+                                            items={villains}
+                                            onSelectItem={onSelectVillain}
+                                            disabled={is_ready}
+                                        />
+                                        {/* Ready / unready button */}
+                                        <button
+                                            type="button"
+                                            className={
+                                                "mt-3 btn" +
+                                                (is_ready ? " btn-secondary" : " btn-primary")
+                                            }
+                                            onClick={() => onSetReady(!is_ready)}
+                                            disabled={!villain}
+                                        >
+                                            {is_ready ? <>Unready</> : <>Ready</>}
+                                        </button>
+                                    </>
                                 )}
-                                {isReady && <div>Is REEADY EOSUTN</div>}
                             </div>
                         );
                     })}

@@ -7,7 +7,7 @@ interface Props {
 function LobbyCard({ clientName, villain, isReady }: Props) {
     return (
         <>
-            <div className="card mb-3" style={{ maxWidth: "540px" }}>
+            <div className="card mb-3">
                 <div className="row g-0">
                     <div className="col-md-4">
                         <img
@@ -18,13 +18,17 @@ function LobbyCard({ clientName, villain, isReady }: Props) {
                     </div>
                     <div className="col-md-8">
                         <div className="card-body">
-                            <h5 className="card-title">{`${clientName} as ${villain}`}</h5>
+                            <h5 className="card-title">{`${clientName} as ${
+                                villain || "[choosing]"
+                            }`}</h5>
                             <p className="card-text">Provide villain objective here.</p>
-                            {isReady && (
-                                <p className="card-text">
-                                    <small className="text-body-secondary">Ready</small>
-                                </p>
-                            )}
+                            <p className="card-text">
+                                {isReady ? (
+                                    <span className="badge text-bg-success">Ready</span>
+                                ) : (
+                                    <span className="badge text-bg-danger">Not Ready</span>
+                                )}
+                            </p>
                         </div>
                     </div>
                 </div>

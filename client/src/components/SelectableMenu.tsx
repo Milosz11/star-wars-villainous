@@ -3,9 +3,10 @@ import { useEffect, useState } from "react";
 interface Props {
     items: string[];
     onSelectItem: (item: string | null) => void;
+    disabled: boolean;
 }
 
-function SelectableMenu({ items, onSelectItem }: Props) {
+function SelectableMenu({ items, onSelectItem, disabled }: Props) {
     const [selectedIndex, setSelectedIndex] = useState(-1);
 
     // If the items prop changes, reset the selection
@@ -27,8 +28,10 @@ function SelectableMenu({ items, onSelectItem }: Props) {
                         }
                         key={item}
                         onClick={(_event) => {
-                            setSelectedIndex(index);
-                            onSelectItem(item);
+                            if (!disabled) {
+                                setSelectedIndex(index);
+                                onSelectItem(item);
+                            }
                         }}
                     >
                         {item}
