@@ -1,6 +1,9 @@
 import { Link } from "react-router";
 
 function Home() {
+    localStorage.removeItem("game_id");
+    localStorage.removeItem("player_id");
+
     return (
         <div className="contentAreaWide col-auto">
             <div className="text-start">
@@ -21,8 +24,8 @@ function Home() {
                 <Link to="/lobby" state={{ ip: "localhost", restApiPort: "3000", wsPort: "4000" }}>
                     <button className="btn btn-primary me-2">Create Game Lobby</button>
                 </Link>
-                <Link to="/">
-                    <button className="btn btn-primary ms-2">Join Game (NYI)</button>
+                <Link to="/join-lobby">
+                    <button className="btn btn-primary ms-2">Join Game</button>
                 </Link>
                 <h2>Singleplayer</h2>
                 <Link to="/">

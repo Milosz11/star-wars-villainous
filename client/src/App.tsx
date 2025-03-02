@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router";
 import "./App.css";
 import Header from "./components/Header";
 import Home from "./pages/Home";
-import LoadGame from "./pages/LoadGame";
+import JoinLobby from "./pages/JoinLobby";
 import Lobby from "./pages/Lobby";
 
 function App() {
@@ -16,7 +16,7 @@ function App() {
             <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/lobby" element={<Lobby />} />
-                <Route path="/load-game" element={<LoadGame />} />
+                <Route path="/join-lobby" element={<JoinLobby />} />
             </Routes>
         </BrowserRouter>
     );

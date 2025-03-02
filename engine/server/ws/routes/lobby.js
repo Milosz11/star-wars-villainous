@@ -6,6 +6,9 @@ function handleLobbyMessage(socket, msg, clients, sessions) {
         case "join":
             return join(socket, msg, clients, sessions);
 
+        case "update":
+            return update(socket, msg, clients, sessions);
+
         case "selectVillain":
             return selectVillain(socket, msg, clients, sessions);
 
@@ -51,14 +54,44 @@ function create(socket, _msg, clients, sessions) {
 
 function join(socket, msg, clients, sessions) {
     // get game join code
-    // check num players
-    // generate game id
-    // generate player id
-    // insert into clients: socket -> { gameId, playerId }
-    // insert into sessions[game code][players]
-    // return the sessions, join code, msg type = /lobby/update
+    const gameId = msg["join_code"];
 
-    return { "lobby": "join" };
+    // check game exists
+    if (!Object.keys(sessions).includes(gameId)) {
+        return { "error": "The session does not exist." };
+    }
+
+    // check num players
+    const numMaxPlayers = sessions[[gameId]]["max_players"];
+    const numCurrentPlayers = Object.keys(sessions[[gameId]]["players"]).length;
+    if (numCurrentPlayers >= numMaxPlayers) {
+        return { "error": "The session is full." };
+    }
+
+    // generate player id
+    const playerId = "p" + (numCurrentPlayers + 1).toString();
+
+    // insert into clients: socket -> { game_id, player_id }
+    clients[[socket]] = {
+        "game_id": gameId,
+        "player_id": playerId,
+    };
+
+    // insert into sessions[game code][players]
+    sessions[[gameId]]["players"][[playerId]] = {
+        "socket": socket,
+        "villain": "",
+        "is_ready": false,
+    };
+
+    return returnLobbyUpdate(gameId, playerId, sessions[[gameId]]);
+}
+
+function update(socket, msg, clients, sessions) {
+    // TODO check for errors and invalid values
+    const { join_code, client_id } = msg;
+
+    return returnLobbyUpdate(join_code, client_id, sessions[[join_code]]);
 }
 
 function selectVillain(socket, msg, clients, sessions) {
