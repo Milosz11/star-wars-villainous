@@ -97,7 +97,6 @@ function update(socket, msg, clients, sessions) {
 function selectVillain(socket, msg, clients, sessions) {
     // TODO check for errors and invalid values
     const { join_code, client_id, villain } = msg;
-    console.log("selectVillain received msg: ", msg);
 
     sessions[[join_code]]["players"][[client_id]]["villain"] = villain;
 
@@ -107,7 +106,6 @@ function selectVillain(socket, msg, clients, sessions) {
 function ready(socket, msg, clients, sessions) {
     // TODO check for errors and invalid values
     const { join_code, client_id, is_ready } = msg;
-    console.log("ready received msg: ", msg);
 
     sessions[[join_code]]["players"][[client_id]]["is_ready"] = is_ready;
 

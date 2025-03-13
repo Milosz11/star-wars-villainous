@@ -20,8 +20,6 @@ function Lobby() {
 
     // Get prop to this route, 'state'
     const location = useLocation();
-    // If someone joins through Join Game, joinCode should be the game id they're joining;
-    // otherwise, undefined means we are creating a new lobby
     const { ip, restApiPort, wsPort } = location.state;
 
     const ws = useRef<WebSocket | null>(null);
@@ -49,13 +47,12 @@ function Lobby() {
             setVillains(settings["availableVillains"]);
         };
         fetchData();
-        console.log(villains);
     }, []);
 
     // When rendered, set up component to use a websocket to the server to listen for lobby updates
     // and update lobby information in real time
     useEffect(() => {
-        ws.current = new WebSocket(`http://${ip}:${wsPort}`);
+        ws.current = new WebSocket(`ws://${ip}:${wsPort}`);
 
         ws.current.addEventListener("open", (_event) => {
             if (localStorageGameId != "" && localStorageClientId != "") {

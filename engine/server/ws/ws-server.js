@@ -25,8 +25,6 @@ function createWebSocketServer(port) {
         });
 
         socket.on("message", (data, isBinary) => {
-            console.log("Received: %s", data);
-
             let msg;
             try {
                 msg = JSON.parse(data);
