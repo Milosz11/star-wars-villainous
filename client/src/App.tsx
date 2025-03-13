@@ -3,8 +3,8 @@ import { BrowserRouter, Routes, Route } from "react-router";
 import "./App.css";
 import Header from "./components/Header";
 import Home from "./pages/Home";
-import JoinLobby from "./pages/JoinLobby";
-import Lobby from "./pages/Lobby";
+import JoinLobby from "./pages/lobby/JoinLobby";
+import Lobby from "./pages/lobby/Lobby";
 
 function App() {
     const title = "Star Wars Villainous";

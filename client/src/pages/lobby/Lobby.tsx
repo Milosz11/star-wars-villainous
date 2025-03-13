@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useLocation } from "react-router";
-import LobbyCard from "../components/LobbyCard";
-import SelectableMenu from "../components/SelectableMenu";
+import LobbyCard from "../../components/lobby/LobbyCard";
+import SelectableMenu from "../../components/SelectableMenu";
 
 interface Session {
     host_id: string;
