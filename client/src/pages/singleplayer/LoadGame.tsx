@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router";
 
-function LoadGame() {
+function LoadGameSolo() {
     const [gameId, setGameId] = useState("");
 
     function onInputChange(event: React.ChangeEvent<HTMLInputElement>) {
@@ -36,4 +36,4 @@ function LoadGame() {
     );
 }
 
-export default LoadGame;
+export default LoadGameSolo;

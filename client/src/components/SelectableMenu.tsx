@@ -1,35 +1,22 @@
-import { useState } from "react";
-
 interface Props {
     items: string[];
-    onSelectItem: (item: string | null) => void;
+    onSelectItem: (item: string) => void;
+    selectedItem: string;
     disabled: boolean;
 }
 
-function SelectableMenu({ items, onSelectItem, disabled }: Props) {
-    const [selectedIndex, setSelectedIndex] = useState(-1);
-
-    // If the items prop changes, reset the selection
-    const [previousItems, setPreviousItems] = useState(items); // TODO will have to test this when
-    // displaying menus of the same list where one changes the other
-    if (items !== previousItems) {
-        setPreviousItems(items);
-        setSelectedIndex(-1);
-        onSelectItem(null);
-    }
-
+function SelectableMenu({ items, onSelectItem, selectedItem, disabled }: Props) {
     return (
         <>
             <ul className="list-group">
-                {items.map((item, index) => (
+                {items.map((item) => (
                     <li
                         className={
-                            "clickable list-group-item" + (index == selectedIndex ? " active" : "")
+                            "clickable list-group-item" + (item == selectedItem ? " active" : "")
                         }
                         key={item}
                         onClick={(_event) => {
                             if (!disabled) {
-                                setSelectedIndex(index);
                                 onSelectItem(item);
                             }
                         }}

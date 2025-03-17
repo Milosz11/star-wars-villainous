@@ -28,10 +28,10 @@ function Home() {
                     <button className="btn btn-primary ms-2">Join Game</button>
                 </Link>
                 <h2>Singleplayer</h2>
-                <Link to="/">
-                    <button className="btn btn-primary me-2">Create Game (NYI)</button>
+                <Link to="/new-game-solo">
+                    <button className="btn btn-primary me-2">Create Game</button>
                 </Link>
-                <Link to="/">
+                <Link to="/load-game-solo">
                     <button className="btn btn-primary ms-2">Load Game (NYI)</button>
                 </Link>
             </div>

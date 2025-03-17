@@ -114,14 +114,14 @@ function Lobby() {
         };
     }, []);
 
-    function onSelectVillain(villain: string | null) {
+    function onSelectVillain(villain: string) {
         ws.current?.send(
             JSON.stringify({
                 "msg_type": "lobby",
                 "msg_subtype": "selectVillain",
                 "join_code": lobby?.["join_code"],
                 "client_id": localStorageClientId,
-                "villain": villain ?? "",
+                "villain": villain,
             })
         );
     }
@@ -157,6 +157,7 @@ function Lobby() {
                                         <SelectableMenu
                                             items={villains}
                                             onSelectItem={onSelectVillain}
+                                            selectedItem={villain}
                                             disabled={is_ready}
                                         />
                                         {/* Ready / unready button */}
