@@ -1,5 +1,7 @@
 import { useEffect, useState, useRef } from "react";
-import { useLocation } from "react-router";
+
+import { ENGINE_IP, ENGINE_HTTP_PORT, ENGINE_WS_PORT } from "../../constants";
+
 import LobbyCard from "../../components/lobby/LobbyCard";
 import SelectableMenu from "../../components/SelectableMenu";
 
@@ -17,10 +19,6 @@ interface Session {
 
 function Lobby() {
     // Stored in localStorage: game_id, player_id
-
-    // Get prop to this route, 'state'
-    const location = useLocation();
-    const { ip, restApiPort, wsPort } = location.state;
 
     const ws = useRef<WebSocket | null>(null);
 
@@ -41,7 +39,7 @@ function Lobby() {
     // Get available villains to display or render (TODO consider alternate method of calling API, like moving into getState()?)
     useEffect(() => {
         const fetchData = async () => {
-            const url = `http://${ip}:${restApiPort}/game/game-settings`;
+            const url = `http://${ENGINE_IP}:${ENGINE_HTTP_PORT}/game/game-settings`;
             const response = await fetch(url);
             const settings = await response.json();
             setVillains(settings["availableVillains"]);
@@ -52,7 +50,7 @@ function Lobby() {
     // When rendered, set up component to use a websocket to the server to listen for lobby updates
     // and update lobby information in real time
     useEffect(() => {
-        ws.current = new WebSocket(`ws://${ip}:${wsPort}`);
+        ws.current = new WebSocket(`ws://${ENGINE_IP}:${ENGINE_WS_PORT}`);
 
         ws.current.addEventListener("open", (_event) => {
             if (localStorageGameId != "" && localStorageClientId != "") {

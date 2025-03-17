@@ -21,7 +21,7 @@ function Home() {
             </div>
             <div className="mt-4">
                 <h2>Multiplayer</h2>
-                <Link to="/lobby" state={{ ip: "localhost", restApiPort: "3000", wsPort: "4000" }}>
+                <Link to="/lobby">
                     <button className="btn btn-primary me-2">Create Game Lobby</button>
                 </Link>
                 <Link to="/join-lobby">

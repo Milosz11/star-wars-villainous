@@ -24,11 +24,6 @@ function JoinLobby() {
                         onClick={() => {
                             localStorage.setItem("game_id", joinCode);
                         }}
-                        state={{
-                            ip: "localhost",
-                            restApiPort: "3000",
-                            wsPort: "4000",
-                        }}
                     >
                         <button className="btn btn-primary me-4">Join</button>
                     </Link>
