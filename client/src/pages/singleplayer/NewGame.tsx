@@ -1,9 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
+
+import { ENGINE_IP, ENGINE_HTTP_PORT, ENGINE_WS_PORT } from "../../constants";
 
 import SelectableMenu from "../../components/SelectableMenu";
 
 function NewGameSolo() {
+    const ws = useRef<WebSocket | null>(null);
+
     const [villains, setVillains] = useState([]);
 
     const [selectedPlayerVillain, setSelectedPlayerVillain] = useState("");
@@ -14,13 +18,44 @@ function NewGameSolo() {
 
     useEffect(() => {
         const fetchData = async () => {
-            const url = "http://localhost:3000/game/game-settings";
+            const url = `http://${ENGINE_IP}:${ENGINE_HTTP_PORT}/game/game-settings`;
             const response = await fetch(url);
             const settings = await response.json();
             setVillains(settings["availableVillains"]);
         };
         fetchData();
     }, []);
+
+    useEffect(() => {
+        ws.current = new WebSocket(`ws://${ENGINE_IP}:${ENGINE_WS_PORT}`);
+
+        ws.current.addEventListener("message", (event) => {
+            const msg = JSON.parse(event.data);
+
+            if (msg["msg_type"] == "soloMode" && msg["msg_subtype"] == "startConfirmation") {
+                const payload = msg["payload"];
+
+                const gameId = payload["game_id"];
+                const playerId = payload["player_id"];
+                localStorage.setItem("game_id", gameId);
+                localStorage.setItem("player_id", playerId);
+
+                // Take to game screen
+                console.log("game started");
+            }
+        });
+    });
+
+    function onClickStartGame() {
+        ws.current?.send(
+            JSON.stringify({
+                "msg_type": "soloMode",
+                "msg_subtype": "create",
+                "villain_one": selectedPlayerVillain,
+                "villain_two": selectedOpponentVillain,
+            })
+        );
+    }
 
     return (
         <div className="contentArea">
@@ -53,9 +88,7 @@ function NewGameSolo() {
                 <button
                     type="button"
                     className={"me-4 btn btn-primary" + (startButtonDisabled ? " disabled" : "")}
-                    onClick={(_event) => {
-                        console.log(selectedPlayerVillain + ", " + selectedOpponentVillain);
-                    }}
+                    onClick={onClickStartGame}
                 >
                     Start Game
                 </button>

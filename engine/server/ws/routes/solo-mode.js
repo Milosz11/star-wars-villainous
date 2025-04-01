@@ -1,3 +1,5 @@
+const { instantiateStartingBoardState } = require("../../../src/construct");
+
 function handleSoloModeMessage(socket, msg, clients, sessions) {
     switch (msg["msg_subtype"]) {
         case "create":
@@ -24,6 +26,10 @@ function soloModeCreate(socket, msg, clients, sessions) {
         { "game_id": gameId, "player_id": playerOneId },
         { "game_id": gameId, "player_id": playerTwoId },
     ];
+
+    const board = instantiateStartingBoardState([villainOne, villainTwo]);
+    console.log(`Created a game (ID: ${gameId}) with villains ${villainOne} and ${villainTwo}.`);
+
     // create a session
     sessions[[gameId]] = {
         "host_id": playerOneId,
@@ -40,9 +46,8 @@ function soloModeCreate(socket, msg, clients, sessions) {
                 "is_ready": true,
             },
         },
+        "game_board": board,
     };
-
-    // CALL THE FUNCTION TO START THE GAME
 
     return {
         "msg_type": "soloMode",
