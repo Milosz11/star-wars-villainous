@@ -29,11 +29,15 @@ function create(socket, _msg, clients, sessions) {
     const gameId = Object.keys(sessions).length.toString();
     // generate player id
     const playerId = "p1";
-    // insert into clients: socket -> { game_id, player_id }
-    clients[[socket]] = {
-        "game_id": gameId,
-        "player_id": playerId,
-    };
+    // insert into clients: socket -> [{ game_id, player_id }]
+    // Note: this is a one2many because one client may be controlling two players, as is the case in singleplayer
+    // We could work around this with proxy player ids or virtual player ids
+    clients[[socket]] = [
+        {
+            "game_id": gameId,
+            "player_id": playerId,
+        },
+    ];
     // insert into sessions: game_id -> { host_id, players: player_id -> { socket, villain, is_ready }, max_players }
     const session = {
         "host_id": playerId,
@@ -44,7 +48,9 @@ function create(socket, _msg, clients, sessions) {
                 "villain": "",
                 "is_ready": false,
             },
+            // TODO available actions will go here (?)
         },
+        // TODO game board will go here (?)
     };
     sessions[[gameId]] = session;
 
@@ -71,11 +77,13 @@ function join(socket, msg, clients, sessions) {
     // generate player id
     const playerId = "p" + (numCurrentPlayers + 1).toString();
 
-    // insert into clients: socket -> { game_id, player_id }
-    clients[[socket]] = {
-        "game_id": gameId,
-        "player_id": playerId,
-    };
+    // insert into clients: socket -> [{ game_id, player_id }]
+    clients[[socket]] = [
+        {
+            "game_id": gameId,
+            "player_id": playerId,
+        },
+    ];
 
     // insert into sessions[game code][players]
     sessions[[gameId]]["players"][[playerId]] = {
@@ -113,7 +121,18 @@ function ready(socket, msg, clients, sessions) {
 }
 
 function start(socket, msg, clients, sessions) {
-    return { "lobby": "start" };
+    const { join_code, client_id } = msg;
+
+    // CALL FUNCITON TO START GAME
+
+    return {
+        "msg_type": "lobby",
+        "msg_subtype": "startConfirmation",
+        "payload": {
+            "player_id": client_id,
+            "game_id": join_code,
+        },
+    };
 }
 
 /**
@@ -130,7 +149,8 @@ function returnLobbyUpdate(gameId, playerId, session) {
         "msg_subtype": "update",
         "payload": {
             "client_id": playerId, // TODO when i get to broadcasting updates to all clients in a session
-            // this will need to change, either to every session's clients' id
+            // this will need to change, either to every session's client id
+            // Do i want every client to get a client_id as their's or the client that caused this update to broadcast, or both
             "session": {
                 ...session,
                 "join_code": gameId,

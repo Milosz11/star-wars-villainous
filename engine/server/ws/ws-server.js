@@ -2,8 +2,36 @@ const { WebSocketServer } = require("ws");
 
 const handleLobbyMessage = require("./routes/lobby");
 const handleGameMessage = require("./routes/game");
+const handleSoloModeMessage = require("./routes/solo-mode");
 
+/**
+ * {
+ *      [socket]: [{
+ *          game_id: "432",
+ *          player_id: "p1",
+ *      }]
+ * }
+ */
 const clients = {};
+
+/**
+ * {
+ *      [game_id]: {
+ *          host_id: "p1",
+ *          max_players: 2,
+ *          players: {
+ *              [player_id]: {
+ *                  socket: <>,
+ *                  villain: "Moff Gideon",
+ *                  is_ready: true,
+ *              }
+ *          },
+ *          game_board: {
+ *              ...
+ *          }
+ *      }
+ * }
+ */
 const sessions = {};
 
 function createWebSocketServer(port) {
@@ -37,6 +65,10 @@ function createWebSocketServer(port) {
             switch (msg["msg_type"]) {
                 case "lobby":
                     responseJson = handleLobbyMessage(socket, msg, clients, sessions);
+                    break;
+
+                case "soloMode":
+                    responseJson = handleSoloModeMessage(socket, msg, clients, sessions);
                     break;
 
                 case "game":
