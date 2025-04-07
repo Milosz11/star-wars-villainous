@@ -13,19 +13,26 @@ function handleGameMessage(socket, msg, clients, sessions) {
 }
 
 function view(socket, msg, clients, sessions) {
-    returnGameView("-1", "-1", {});
+    const { game_id: gameId, player_id: playerId } = msg["payload"];
+
+    const gameBoard = sessions[[gameId]]["game_board"];
+
+    return returnGameView(gameId, playerId, gameBoard);
 }
 
 function playerAction(socket, msg, clients, sessions) {
-    returnGameView("-1", "-1", {});
+    return returnGameView("-1", "-1", {});
 }
 
-function returnGameView(gameId, playerId, gameView) {
+function returnGameView(gameId, playerId, gameBoard) {
+    // TODO optional: preprocess board
+    const gameView = gameBoard;
+
     return {
         "msg_type": "game",
         "msg_subtype": "view",
         "payload": {
-            "client_id": playerId,
+            "player_id": playerId,
             "game_id": gameId,
             "game_view": gameView,
         },
