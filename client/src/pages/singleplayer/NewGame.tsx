@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 
 import { ENGINE_IP, ENGINE_HTTP_PORT, ENGINE_WS_PORT } from "../../constants";
 
@@ -7,6 +7,8 @@ import SelectableMenu from "../../components/SelectableMenu";
 
 function NewGameSolo() {
     const ws = useRef<WebSocket | null>(null);
+
+    const navigate = useNavigate();
 
     const [villains, setVillains] = useState([]);
 
@@ -40,11 +42,14 @@ function NewGameSolo() {
                 localStorage.setItem("game_id", gameId);
                 localStorage.setItem("player_id", playerId);
 
-                // Take to game screen
-                console.log("game started");
+                navigate("/game");
             }
         });
-    });
+
+        return () => {
+            ws.current?.close();
+        };
+    }, []);
 
     function onClickStartGame() {
         ws.current?.send(

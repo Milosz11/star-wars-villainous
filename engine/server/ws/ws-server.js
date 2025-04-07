@@ -48,7 +48,8 @@ function createWebSocketServer(port) {
     wss.on("connection", (socket, request) => {
         socket.on("error", console.error);
 
-        socket.on("close", (code, reason) => {
+        socket.on("close", (code, reasonBuffer) => {
+            const reason = reasonBuffer.toString("utf8") || "(no reason)";
             console.log(`Connection closed. Code: ${code}, reason: ${reason})}`);
         });
 
