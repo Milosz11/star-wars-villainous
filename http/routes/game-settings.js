@@ -2,7 +2,7 @@ const fs = require("node:fs");
 
 module.exports = (_req, res) => {
     try {
-        const data = fs.readFileSync("game-settings.json", "utf-8");
+        const data = fs.readFileSync("./engine/game-settings.json", "utf-8");
         const jsonData = JSON.parse(data);
         res.status(200).json(jsonData);
     } catch (err) {

@@ -1,3 +1,3 @@
 # Star Wars Villainous
 
-A personal project where I create the Star Wars Villainous board game in the browser.
+A personal project where I create a game engine for the board game Star Wars Villainous.
