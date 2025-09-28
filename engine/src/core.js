@@ -36,6 +36,33 @@ function getPlayerById(state, playerId) {
 }
 
 /**
+ * Determines if the player has moved by comparing their previous location with their current.
+ * @param {object} state the board state
+ * @param {string} playerId the id of the player to test
+ * @returns `true` if the player has moved, otherwise `false`
+ */
+function hasPlayerMoved(state, playerId) {
+    getPlayerById(state, playerId);
+
+    const prevLoc = state["sectors"][[playerId]]["previous-villain-mover-location"];
+    const currLoc = state["sectors"][[playerId]]["villain-mover-location"];
+
+    return prevLoc != currLoc;
+}
+
+/**
+ * Checks if the passed playerId is in turn for the passed board state
+ * @param {object} state the game board
+ * @param {string} playerId the player ID to test
+ * @returns `true` if the passed player ID is in turn given the board state, otherwise `false`
+ */
+function isPlayerIdInTurn(state, playerId) {
+    getPlayerById(state, playerId);
+
+    return getPlayerIdInTurn(state) == playerId;
+}
+
+/**
  * Get all current villain locations by name.
  * @param {object} state the board state
  * @param {string} playerId the query villain / player ID
@@ -101,6 +128,24 @@ function getLocationByName(state, playerId, locationName) {
         return location;
     } else {
         throw new Error("Non-existent location provided");
+    }
+}
+
+/**
+ * Gets the player's current location. Throws error on invalid ID.
+ * @param {object} state the board state`
+ * @param {string} playerId the player ID whose current location to get
+ * @returns a REFERENCE to the location object of where the player currently is,
+ * or `""` if the player has not moved yet since the game began (in this case, consider
+ * calling `hasPlayerMoved`)
+ */
+function getCurrentLocation(state, playerId) {
+    const player = getPlayerById(state, playerId);
+
+    if (player["villain-mover-location"] == "") {
+        return "";
+    } else {
+        return getLocationByName(state, playerId, player["villain-mover-location"]);
     }
 }
 
@@ -452,6 +497,9 @@ module.exports = {
     getCardLocation,
     getCardStrength,
     getPlayerById,
+    getCurrentLocation,
+    hasPlayerMoved,
+    isPlayerIdInTurn,
     getPlayerIdInTurn,
     getPlayerIds,
     getLocationByName,

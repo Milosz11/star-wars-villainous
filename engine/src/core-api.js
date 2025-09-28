@@ -6,7 +6,10 @@ const {
     onEndTurn,
     onBeginTurn,
     getPlayerIdInTurn,
+    hasPlayerMoved,
+    isPlayerIdInTurn,
     getLocationByName,
+    getCurrentLocation,
     addCredits,
     getCardById,
     spendCredits,
@@ -31,14 +34,11 @@ const {
 function moveVillain(state, playerId, locationName) {
     const originalPlayer = getPlayerById(state, playerId);
 
-    if (state["player-id-in-turn"] != playerId) {
+    if (!isPlayerIdInTurn(state, playerId)) {
         throw new Error("Player is not in turn");
     }
 
-    if (
-        originalPlayer["previous-villain-mover-location"] !=
-        originalPlayer["villain-mover-location"]
-    ) {
+    if (hasPlayerMoved(state, playerId)) {
         throw new Error("Player has already moved this turn");
     }
 
@@ -66,17 +66,18 @@ function moveVillain(state, playerId, locationName) {
  * @returns a new game board after the current player's turn ends
  */
 function endTurn(state, playerId) {
-    const player = getPlayerById(state, playerId);
+    getPlayerById(state, playerId);
 
-    if (state["player-id-in-turn"] != playerId) {
+    if (!isPlayerIdInTurn(state, playerId)) {
         throw new Error("Player is not in turn");
     }
 
     // Validate player has moved
-    if (player["villain-mover-location"] == player["previous-villain-mover-location"]) {
+    if (!hasPlayerMoved(state, playerId)) {
         throw new Error("Player must move to a new location every turn");
     }
 
+    // our deep copy
     let board = onEndTurn(state, playerId);
 
     // Change player id to next
@@ -106,19 +107,19 @@ function endTurn(state, playerId) {
  */
 function _canTakeAction(state, playerId, action) {
     // check player id
-    const player = getPlayerById(state, playerId);
+    getPlayerById(state, playerId);
 
     // check player in turn
-    if (getPlayerIdInTurn(state) != playerId) {
+    if (!isPlayerIdInTurn(state, playerId)) {
         throw new Error("Player is not in turn");
     }
 
     // check player has moved
-    if (player["villain-mover-location"] == player["previous-villain-mover-location"]) {
+    if (!hasPlayerMoved(state, playerId)) {
         throw new Error("Player must move before taking actions");
     }
 
-    const currentLocation = getLocationByName(state, playerId, player["villain-mover-location"]);
+    const currentLocation = getCurrentLocation(state, playerId);
 
     // check current location has action
     if (!currentLocation["actions"].includes(action)) {
@@ -184,8 +185,7 @@ function takeAction(state, playerId, action, kvs) {
             throw new Error("Bad action string specified");
     }
 
-    const player = getPlayerById(board, playerId);
-    const location = getLocationByName(board, playerId, player["villain-mover-location"]);
+    const location = getCurrentLocation(board, playerId);
     location["taken-actions"].push(action);
 
     return board;
