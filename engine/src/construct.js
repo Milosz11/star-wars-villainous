@@ -45,7 +45,7 @@ function instantiateCustomBoardState(villainsOrVillainNames, kvs) {
         }
     }
 
-    const data = fs.readFileSync("game-settings.json", "utf-8");
+    const data = fs.readFileSync("./engine/game-settings.json", "utf-8");
     const settings = JSON.parse(data);
     const availableVillains = settings["availableVillains"];
 
@@ -79,21 +79,6 @@ function instantiateCustomBoardState(villainsOrVillainNames, kvs) {
             })
     ) {
         throw new Error("Key 'villain-name' not provided with villain definition");
-    }
-
-    // Check for duplicates
-    const providedVillainNames = villainsOrVillainNames.map((v) => {
-        if (typeof v == "object") {
-            return v["villain-name"];
-        } else {
-            return v;
-        }
-    });
-    const duplicates = providedVillainNames.filter(
-        (v, index) => providedVillainNames.indexOf(v) !== index
-    );
-    if (duplicates.length > 0) {
-        throw new Error("Duplicate villain names passed");
     }
 
     const defaultVillainsToAdd = ["Moff Gideon", "General Grievous"].filter((v) => {
@@ -241,7 +226,7 @@ function instantiateStartingBoardState(villainNames, kvs) {
         throw new Error("Improper length of villain names");
     }
 
-    let seed;
+    let seed = "uatsnoehuyptscroehntuoasaotnehue"; // some random default
     if (typeof kvs == "object") {
         seed = kvs["seed"];
         if (seed != undefined) {
@@ -251,7 +236,7 @@ function instantiateStartingBoardState(villainNames, kvs) {
         }
     }
 
-    const data = fs.readFileSync("game-settings.json", "utf-8");
+    const data = fs.readFileSync("./engine/game-settings.json", "utf-8");
     const settings = JSON.parse(data);
     const availableVillains = settings["availableVillains"];
 
@@ -259,11 +244,6 @@ function instantiateStartingBoardState(villainNames, kvs) {
         if (!availableVillains.includes(v)) {
             throw new Error("Bad villain name value");
         }
-    }
-
-    const duplicates = villainNames.filter((v, index) => villainNames.indexOf(v) !== index);
-    if (duplicates.length > 0) {
-        throw new Error("Duplicate villain names passed");
     }
 
     // For each villain, create a unique player id and associate with their
@@ -277,7 +257,7 @@ function instantiateStartingBoardState(villainNames, kvs) {
     }, {});
 
     return {
-        "seed": seed || "uatsnoehuyptscroehntuoasaotnehue",
+        "seed": seed,
         "counter": 1,
         "player-id-in-turn": "p1",
         "sectors": sectors,

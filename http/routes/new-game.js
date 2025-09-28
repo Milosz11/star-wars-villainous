@@ -1,55 +1,46 @@
 const fs = require("node:fs");
-const { instantiateStartingBoardState } = require("../../../engine/src/construct");
+const path = require("path");
+
+const { instantiateStartingBoardState } = require("../../engine/src/construct");
+const { beginGame } = require("../../engine/src/core");
 
 module.exports = (req, res) => {
     try {
-        // Key not in object
-        if (!("availableVillains" in req.body)) {
-            res.status(400).json({ error: "Key 'availableVillains' not provided" });
-            return;
+        const playerVillains = req.body.players;
+
+        if (!playerVillains || !Array.isArray(playerVillains)) {
+            res.status(400).json({ status: "error", errorMessage: "'players' must be a list" });
         }
 
-        // Key's value is not array
-        if (!Array.isArray(req.body["availableVillains"])) {
-            res.status(400).json({ error: "Key 'availableVillains' is not an array" });
-            return;
-        }
-
-        const data = fs.readFileSync("game-settings.json", "utf-8");
+        // TODO simplify
+        const p = path.join(__dirname, "..", "..", "engine", "game-settings.json");
+        const data = fs.readFileSync(p, "utf-8");
         const settings = JSON.parse(data);
-        const availableVillains = settings["availableVillains"];
-        const reqVillains = req.body["availableVillains"];
 
-        // Array has a bad value (a string not matching any Villain one can play)
-        for (const v of reqVillains) {
-            if (!availableVillains.includes(v)) {
-                res.status(400).json({ error: "Bad values in array 'availableVillains'" });
-                return;
-            }
+        if (playerVillains.length < 2 || settings["maxNumPlayers"] < playerVillains.length) {
+            res.status(400).json({
+                status: "error",
+                errorMessage: "'players' length must be on the range [2, <maxNumPlayers>].",
+            });
         }
 
-        // Array has duplicate Villain names
-        const duplicates = reqVillains.filter((v, index) => reqVillains.indexOf(v) !== index);
-        if (duplicates.length > 0) {
-            res.status(400).json({ error: "'availableVillains' cannot contain duplicate values" });
-            return;
+        if (
+            playerVillains.some((villainName) => {
+                return !settings["availableVillains"].includes(villainName);
+            })
+        ) {
+            res.status(400).json({ status: "error", errorMessage: "Invalid Villain name" });
         }
 
-        // Less than 2 Villains were provided
-        if (reqVillains.length < 2) {
-            res.status(400).json({ error: "The game requires a minimum of 2 players." });
-            return;
-        }
+        const gameBoard = beginGame(instantiateStartingBoardState(playerVillains, { seed: req.body.seed }));
 
-        // This will eventually be 4, but baby steps.
-        if (reqVillains.length > 2) {
-            res.status(400).json({ error: "The game currently supports a maximum of 2 players." });
-            return;
-        }
-
-        res.status(200).json({ success: instantiateStartingBoardState(...reqVillains) });
+        res.status(200).json({
+            status: "success",
+            gameId: "123",
+            gameBoard,
+        });
     } catch (err) {
         console.log(err);
-        res.status(500).json({ error: err });
+        res.status(500).json({ status: "error", errorMessage: err.message });
     }
 };

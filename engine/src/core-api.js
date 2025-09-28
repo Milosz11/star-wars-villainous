@@ -175,6 +175,7 @@ function takeAction(state, playerId, action, kvs) {
         case "Play a Card":
             board = _playCard(board, playerId, kvs["card-id"], kvs);
             break;
+
         case "Vanquish":
             board = _vanquish(board, playerId, kvs["vanquished-id"], kvs["vanquisher-ids"], kvs);
             break;

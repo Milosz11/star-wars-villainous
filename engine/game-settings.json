@@ -1,3 +1,4 @@
 {
-    "availableVillains": ["Moff Gideon", "General Grievous", "Darth Vader"]
+    "availableVillains": ["Moff Gideon", "General Grievous", "Darth Vader"],
+    "maxNumPlayers": 2
 }
