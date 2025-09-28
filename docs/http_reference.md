@@ -39,14 +39,14 @@ Upon success (status code `200`), returns the following payload with `status` se
 
 ```json
 {
-    status: "success" | "error",
+    "status": "success" | "error",
 
     // only set if 'status' is "success"
-    gameId: "<string>",
-    gameBoard: <gameBoard>,
+    "gameId": "<string>",
+    "gameBoard": <gameBoard>,
 
     // only set if 'status' is "error"
-    errorMessage: "<string>"
+    "errorMessage": "<string>"
 }
 ```
 
