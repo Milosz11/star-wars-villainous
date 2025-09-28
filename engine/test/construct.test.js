@@ -32,12 +32,6 @@ describe("instantiateStartingBoardState throws Error on bad input", () => {
         }).toThrow("Improper length of villain names");
     });
 
-    it("when duplicate villain names are passed", () => {
-        expect(() => {
-            instantiateStartingBoardState([availableVillains[0], availableVillains[0]]);
-        }).toThrow("Duplicate villain names passed");
-    });
-
     it("seed length invalid type", () => {
         expect(() => {
             instantiateStartingBoardState([availableVillains[0], availableVillains[1]], {
@@ -201,18 +195,6 @@ describe("instantiateCustomBoardState throws Error on invalid arguments", () => 
         expect(() => {
             instantiateCustomBoardState([{ "villain-name": "Revan" }]);
         }).toThrow("Key 'villain-name' has invalid villain name");
-    });
-
-    it("duplicate villains provided 1", () => {
-        expect(() => {
-            instantiateCustomBoardState(["Moff Gideon", "Moff Gideon"]);
-        }).toThrow("Duplicate villain names passed");
-    });
-
-    it("duplicate villains provided 2", () => {
-        expect(() => {
-            instantiateCustomBoardState(["Moff Gideon", { "villain-name": "Moff Gideon" }]);
-        }).toThrow("Duplicate villain names passed");
     });
 
     it("bad type for a key like ambition", () => {

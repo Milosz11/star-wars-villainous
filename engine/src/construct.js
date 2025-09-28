@@ -81,6 +81,15 @@ function instantiateCustomBoardState(villainsOrVillainNames, kvs) {
         throw new Error("Key 'villain-name' not provided with villain definition");
     }
 
+    const providedVillainNames = villainsOrVillainNames
+        .map((v) => {
+            if (typeof v == "object") {
+                return v["villain-name"];
+            } else if (typeof v == "string") {
+                return v;
+            }
+        })
+        .filter((v) => v);
     const defaultVillainsToAdd = ["Moff Gideon", "General Grievous"].filter((v) => {
         return !providedVillainNames.includes(v);
     });
