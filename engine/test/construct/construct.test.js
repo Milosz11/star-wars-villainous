@@ -1,5 +1,5 @@
-const { instantiateStartingBoardState, instantiateCustomBoardState } = require("../src/construct");
-const { getPlayerById, getLocationByName } = require("../src/core");
+const { instantiateStartingBoardState, instantiateCustomBoardState } = require("../../src/construct");
+const { getPlayerById, getLocationByName } = require("../../src/core");
 
 const availableVillains = ["Moff Gideon", "General Grievous", "Darth Vader"];
 
