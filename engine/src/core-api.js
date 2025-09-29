@@ -245,6 +245,11 @@ function _playCard(state, playerId, cardId, kvs) {
         throw new Error("Card does not belong to player");
     }
 
+    // check if in player's hand
+    if (!player["hand"].map((card) => card["card-id"]).includes(cardId)) {
+        throw new Error("Card is not in the player's hand");
+    }
+
     // check card costs credits
     if (card["credit-cost"] == undefined) {
         throw new Error("Can only play cards that cost credits with a Play a Card action");

@@ -54,6 +54,22 @@ describe("_playCard", () => {
         }).toThrow("Card does not belong to player");
     });
 
+    it("throws error if the card is not in the player's hand", () => {
+        const board = instantiateCustomBoardState([
+            {
+                "villain-name": "Moff Gideon",
+                "villain-mover-location": "The Bridge",
+                "credits": 5,
+                "hand": [],
+                "villain-deck": ["Death Troopers"],
+            },
+        ]);
+
+        expect(() => {
+            _playCard(board, "p1", "p1c1", { "location": "Nevarro City" });
+        }).toThrow("Card is not in the player's hand");
+    });
+
     it("throws error if a card that doesn't cost credits is played", () => {
         const board = instantiateCustomBoardState([
             {
