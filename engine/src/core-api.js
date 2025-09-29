@@ -6,6 +6,7 @@ const {
     onEndTurn,
     onBeginTurn,
     getPlayerIdInTurn,
+    getPlayerIdOfCardId,
     hasPlayerMoved,
     isPlayerIdInTurn,
     getLocationByName,
@@ -181,6 +182,10 @@ function takeAction(state, playerId, action, kvs) {
             board = _vanquish(board, playerId, kvs["vanquished-id"], kvs["vanquisher-ids"], kvs);
             break;
 
+        case "Discard Cards":
+            board = _discardCards(board, playerId, kvs["discard-cards-ids"], kvs);
+            break;
+
         default:
             throw new Error("Bad action string specified");
     }
@@ -236,7 +241,7 @@ function _playCard(state, playerId, cardId, kvs) {
     const card = getCardById(board, cardId);
 
     // check card belongs to player
-    if (playerId.substring(0, 2) != cardId.substring(0, 2)) {
+    if (getPlayerIdOfCardId(cardId) != playerId) {
         throw new Error("Card does not belong to player");
     }
 
@@ -305,7 +310,7 @@ function _vanquish(state, playerId, vanquishedId, vanquisherIds, kvs) {
 
     // check all ids belong to player
     const allVanquishCardIds = vanquisherIds.concat(vanquishedId);
-    if (allVanquishCardIds.some((id) => id.substring(0, 2) != playerId)) {
+    if (allVanquishCardIds.some((id) => getPlayerIdOfCardId(id) != playerId)) {
         throw new Error("Player does not own card");
     }
 
@@ -373,11 +378,40 @@ function _vanquish(state, playerId, vanquishedId, vanquisherIds, kvs) {
     return board;
 }
 
+function _discardCards(state, playerId, toDiscardCardsIds, kvs) {
+    let board = R.clone(state);
+    
+    // check all card ids belong to player
+    if (toDiscardCardsIds.map((cId) => getPlayerIdOfCardId(cId)).some((pId) => pId != playerId)) {
+        throw new Error("Cards to discard must belong to the player");
+    }
+
+    // check all card ids are in the hand
+    const player = getPlayerById(board, playerId);
+    if (toDiscardCardsIds.some((cId) => {
+        return !player["hand"].map((card) => card["card-id"]).includes(cId);
+    })) {
+        throw new Error("Card to discard is not in the player's hand");
+    }
+
+    // move the card ids to the discard pile
+    const cardsToDiscard = toDiscardCardsIds.map((cId) => getCardById(board, cId));
+    player["villain-discard-pile"].unshift(...cardsToDiscard);
+    player["hand"] = player["hand"].filter((card) => {
+        return !toDiscardCardsIds.includes(card["card-id"]);
+    })
+
+    // TODO consider callbacks
+
+    return board;
+}
+
 module.exports = {
     _canTakeAction,
     _collectCredits,
     _playCard,
     _vanquish,
+    _discardCards,
     moveVillain,
     endTurn,
     takeAction,

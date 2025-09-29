@@ -36,6 +36,21 @@ function getPlayerById(state, playerId) {
 }
 
 /**
+ * Gets the owning player ID of the passed card ID.
+ * @param {string} cardId the card ID to obtain the player ID from
+ * @returns the player ID of the cardID
+ */
+function getPlayerIdOfCardId(cardId) {
+    if (typeof cardId != "string") {
+        throw new Error("cardId must be a string");
+    }
+
+    const [playerId, _] = cardId.split("c", 2);
+
+    return playerId;
+}
+
+/**
  * Determines if the player has moved by comparing their previous location with their current.
  * @param {object} state the board state
  * @param {string} playerId the id of the player to test
@@ -83,8 +98,7 @@ function getCardById(state, cardId) {
         throw new Error("Id must be a string");
     }
 
-    // We don't expect the possibility of having up to a p10 now so this should be fine.
-    const playerId = cardId.substring(0, 2);
+    const playerId = getPlayerIdOfCardId(cardId);
 
     const player = getPlayerById(state, playerId);
 
@@ -161,7 +175,7 @@ function getCardSide(state, cardId) {
     // for existence check
     getCardById(state, cardId);
 
-    const player = getPlayerById(state, cardId.substring(0, 2));
+    const player = getPlayerById(state, getPlayerIdOfCardId(cardId));
 
     for (const location of player["locations"]) {
         if (location["villain-side-cards"].map((c) => c["card-id"]).includes(cardId)) {
@@ -183,7 +197,7 @@ function getCardSide(state, cardId) {
 function getCardLocation(state, cardId) {
     getCardById(state, cardId);
 
-    const player = getPlayerById(state, cardId.substring(0, 2));
+    const player = getPlayerById(state, getPlayerIdOfCardId(cardId));
 
     for (const location of player["locations"]) {
         if (
@@ -497,6 +511,7 @@ module.exports = {
     getCardLocation,
     getCardStrength,
     getPlayerById,
+    getPlayerIdOfCardId,
     getCurrentLocation,
     hasPlayerMoved,
     isPlayerIdInTurn,
