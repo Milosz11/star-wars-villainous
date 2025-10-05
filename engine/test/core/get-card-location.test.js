@@ -12,14 +12,14 @@ describe("getCardLocation", () => {
         }).toThrow("Non-existent card id");
     });
 
-    it("throws error if card is not at a location", () => {
+    it("returns null if card is not at a location", () => {
         const board = instantiateCustomBoardState([
             { "villain-name": "Moff Gideon", "hand": ["Death Troopers"] },
         ]);
 
-        expect(() => {
-            const card = getCardLocation(board, "p1c1");
-        }).toThrow("Card is not at a sector location");
+        const shouldBeNull = getCardLocation(board, "p1c1");
+
+        expect(shouldBeNull).toBeNull();
     });
 
     it("gets the correct location", () => {

@@ -60,8 +60,8 @@ module.exports = {
                 "description":
                     "Reveal cards from your deck until you reveal Beskar. Play it for free.",
                 "ambition-cost": 2,
-                "ability": (_state) => {
-                    console.log("#FIXME The Client ambition ability.");
+                "ability": (board, playerId, thisCardId, kvs) => {
+                    return board;
                 },
             },
         ],

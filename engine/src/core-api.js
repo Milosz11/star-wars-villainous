@@ -17,6 +17,7 @@ const {
     getCardSide,
     getCardLocation,
     getCardStrength,
+    spendAmbition,
 } = require("./core");
 
 /**
@@ -184,6 +185,10 @@ function takeAction(state, playerId, action, kvs) {
 
         case "Discard Cards":
             board = _discardCards(board, playerId, kvs["discard-cards-ids"], kvs);
+            break;
+
+        case "Ambition":
+            board = _ambition(board, playerId, kvs["card-id"], kvs);
             break;
 
         default:
@@ -383,9 +388,18 @@ function _vanquish(state, playerId, vanquishedId, vanquisherIds, kvs) {
     return board;
 }
 
+/**
+ * Perform a Discard Cards action, moving all specified cards from the player's
+ * hand to the villain discard pile.
+ * @param {object} state the game board
+ * @param {string} playerId the player discarding cards
+ * @param {string[]} toDiscardCardsIds a list of card IDs to discard
+ * @param {object} kvs additional key value arguments to pass
+ * @returns a new game board
+ */
 function _discardCards(state, playerId, toDiscardCardsIds, kvs) {
     let board = R.clone(state);
-    
+
     // check all card ids belong to player
     if (toDiscardCardsIds.map((cId) => getPlayerIdOfCardId(cId)).some((pId) => pId != playerId)) {
         throw new Error("Cards to discard must belong to the player");
@@ -393,9 +407,11 @@ function _discardCards(state, playerId, toDiscardCardsIds, kvs) {
 
     // check all card ids are in the hand
     const player = getPlayerById(board, playerId);
-    if (toDiscardCardsIds.some((cId) => {
-        return !player["hand"].map((card) => card["card-id"]).includes(cId);
-    })) {
+    if (
+        toDiscardCardsIds.some((cId) => {
+            return !player["hand"].map((card) => card["card-id"]).includes(cId);
+        })
+    ) {
         throw new Error("Card to discard is not in the player's hand");
     }
 
@@ -404,11 +420,78 @@ function _discardCards(state, playerId, toDiscardCardsIds, kvs) {
     player["villain-discard-pile"].unshift(...cardsToDiscard);
     player["hand"] = player["hand"].filter((card) => {
         return !toDiscardCardsIds.includes(card["card-id"]);
-    })
+    });
 
     // TODO consider callbacks
 
     return board;
+}
+
+/**
+ * Performs an Ambition action, which can be either playing an ambition card from the hand to
+ * the sector, or activating an ambition ability of a card already in the sector.
+ * @param {object} state the game board
+ * @param {string} playerId the player performing the action
+ * @param {string} cardId the id of the card to use in the ambition action
+ * @param {object} kvs additional parameters for the ambition action.
+ * If the ambition action is being used for an ambition card, the key "location" must be present
+ * with the sector location of where to play the card; if the action is being used for an ambition
+ * ability, the key "ambition-ability-index" should be present with the 0-indexed position of
+ * the ambition ability as it appears in the card definition.
+ */
+function _ambition(state, playerId, cardId, kvs) {
+    const board = R.clone(state);
+
+    // only used in first else if
+    const cardLocation = getCardLocation(board, cardId);
+
+    const player = getPlayerById(board, playerId);
+    const card = getCardById(board, cardId);
+
+    // if playing card from hand
+    if (player["hand"].map((card) => card["card-id"]).includes(cardId)) {
+        if (card["ambition-cost"] == undefined) {
+            throw new Error("Card must be an ambition card");
+        }
+
+        if (!getVillainLocationNames(board, playerId).includes(kvs["location"] || "")) {
+            throw new Error("Invalid location");
+        }
+
+        spendAmbition(board, playerId, card["ambition-cost"]);
+
+        // remove from hand
+        player["hand"] = player["hand"].filter((card) => card["card-id"] != cardId);
+
+        // add to specified location
+        getLocationByName(board, playerId, kvs["location"])["villain-side-cards"].push(card);
+
+        return board;
+    } else if (cardLocation != null) {
+        if (!card["ambition-abilities"]) {
+            throw new Error("Card has no ambition abilities");
+        }
+
+        const abilityIndex = kvs["ambition-ability-index"];
+        if (typeof abilityIndex != "number") {
+            throw new Error("Bad ability index");
+        }
+
+        const ambitionAbility = card["ambition-abilities"][[abilityIndex]];
+        if (!ambitionAbility) {
+            throw new Error("Bad ability index");
+        }
+
+        spendAmbition(board, playerId, ambitionAbility["ambition-cost"]);
+
+        // activate the ability
+        const ambitionAbilityFn = ambitionAbility["ability"];
+        const newBoard = ambitionAbilityFn(board, playerId, cardId, kvs);
+
+        return newBoard;
+    } else {
+        throw new Error("Card not in hand nor location");
+    }
 }
 
 module.exports = {
@@ -417,6 +500,7 @@ module.exports = {
     _playCard,
     _vanquish,
     _discardCards,
+    _ambition,
     moveVillain,
     endTurn,
     takeAction,

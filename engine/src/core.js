@@ -192,7 +192,8 @@ function getCardSide(state, cardId) {
  * Get the location object of a card
  * @param {object} state the game board
  * @param {string} cardId card to query
- * @returns a REFEREENCE to the location object where the queried card is at
+ * @returns a REFEREENCE to the location object where the queried card is at,
+ * or `null` if the card is not at a sector location
  */
 function getCardLocation(state, cardId) {
     getCardById(state, cardId);
@@ -208,7 +209,7 @@ function getCardLocation(state, cardId) {
         }
     }
 
-    throw new Error("Card is not at a sector location");
+    return null;
 }
 
 /**
@@ -496,6 +497,33 @@ function addAmbition(state, playerId, ambition) {
     return board;
 }
 
+/**
+ * Subtract a player's ambition amount.
+ * @param {object} state the game board
+ * @param {string} playerId the player ID spending ambition
+ * @param {integer} ambition number of ambition being spent, must be non-negative
+ * @returns a REFERENCE to the modified game board
+ */
+function spendAmbition(state, playerId, ambition) {
+    if (!Number.isInteger(ambition)) {
+        throw new Error("Ambition must be an integer");
+    }
+
+    if (ambition < 0) {
+        throw new Error("Ambition must be non-negative");
+    }
+
+    const player = getPlayerById(state, playerId);
+
+    if (ambition > player["ambition"]) {
+        throw new Error("Not enough ambition");
+    }
+
+    player["ambition"] = player["ambition"] - ambition;
+
+    return state;
+}
+
 module.exports = {
     beginGame,
     onBeginTurn,
@@ -506,6 +534,7 @@ module.exports = {
     addCredits,
     addAmbition,
     spendCredits,
+    spendAmbition,
     getCardById,
     getCardSide,
     getCardLocation,
