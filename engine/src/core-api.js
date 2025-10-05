@@ -191,6 +191,10 @@ function takeAction(state, playerId, action, kvs) {
             board = _ambition(board, playerId, kvs["card-id"], kvs);
             break;
 
+        case "Maneuver":
+            board = _maneuver(board, playerId, kvs["card-id"], kvs["location"]);
+            break;
+
         default:
             throw new Error("Bad action string specified");
     }
@@ -494,6 +498,58 @@ function _ambition(state, playerId, cardId, kvs) {
     }
 }
 
+/**
+ * Perform a maneuver action, moving a card that is in play to a new location.
+ * @param {object} state the game board
+ * @param {string} playerId the player performing the maneuver action
+ * @param {string} cardId the ID of the card being maneuvered
+ * @param {string} newLocationName the name of the location to move the card to
+ */
+function _maneuver(state, playerId, cardId, newLocationName) {
+    const board = R.clone(state);
+
+    // check card belongs to player
+    if (getPlayerIdOfCardId(cardId) != playerId) {
+        throw new Error("Player does not own card");
+    }
+
+    // check that card is in location
+    const currentLocation = getCardLocation(board, cardId);
+    if (!currentLocation) {
+        throw new Error("Card must be at a sector location");
+    }
+
+    // check card is villain side
+    if (getCardSide(board, cardId) != "villain") {
+        throw new Error("Card must be on the villain side");
+    }
+
+    // check that new location is valid
+    if (!getVillainLocationNames(board, playerId).includes(newLocationName)) {
+        throw new Error("New location name invalid");
+    }
+
+    // check that new location is not current location
+    if (currentLocation["name"] == newLocationName) {
+        throw new Error("Must move to a new location");
+    }
+
+    // TODO add error checking for items
+
+    const cardToManeuver = getCardById(board, cardId);
+
+    // remove from current location
+    currentLocation["villain-side-cards"] = currentLocation["villain-side-cards"].filter(
+        (card) => card["card-id" != cardId]
+    );
+
+    // add to new location
+    const newLocation = getLocationByName(board, playerId, newLocationName);
+    newLocation["villain-side-cards"].push(cardToManeuver);
+
+    return board;
+}
+
 module.exports = {
     _canTakeAction,
     _collectCredits,
@@ -501,6 +557,7 @@ module.exports = {
     _vanquish,
     _discardCards,
     _ambition,
+    _maneuver,
     moveVillain,
     endTurn,
     takeAction,
