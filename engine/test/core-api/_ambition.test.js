@@ -15,6 +15,23 @@ describe("_ambition", () => {
             _ambition(board, "p1", "p1c1", { "location": "Nevarro City" });
         }).toThrow("Card not in hand nor location");
     });
+
+    it("throws when player does not own card", () => {
+        const board = instantiateCustomBoardState([
+            {
+                "villain-name": "Moff Gideon",
+                "villain-deck": ["Laboratory Samples"],
+            },
+            {
+                "villain-name": "General Grievous",
+                "villain-deck": ["Magna Guard"],
+            },
+        ]);
+
+        expect(() => {
+            _ambition(board, "p1", "p2c1", { "location": "Nevarro City" });
+        }).toThrow("Player does not own card");
+    });
 });
 
 describe("_ambition card", () => {
@@ -95,6 +112,23 @@ describe("_ambition card", () => {
 });
 
 describe("_ambition ability", () => {
+    it("throws when card not on villain side", () => {
+        const board = instantiateCustomBoardState([
+            {
+                "villain-name": "Moff Gideon",
+                "locations": {
+                    "Nevarro City": {
+                        "hero-side-cards": ["The Mandalorian"],
+                    },
+                },
+            },
+        ]);
+
+        expect(() => {
+            _ambition(board, "p1", "p1c1", { "ambition-ability-index": 0 });
+        }).toThrow("Card must be on villain side");
+    });
+
     it("throws when no ambition ability", () => {
         const board = instantiateCustomBoardState([
             {

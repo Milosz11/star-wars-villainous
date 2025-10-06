@@ -320,7 +320,9 @@ function _playCard(state, playerId, cardId, kvs) {
  * @returns a new game board
  */
 function _vanquish(state, playerId, vanquishedId, vanquisherIds, kvs) {
-    getPlayerById(state, playerId);
+    const board = R.clone(state);
+
+    getPlayerById(board, playerId);
 
     // check all ids belong to player
     const allVanquishCardIds = vanquisherIds.concat(vanquishedId);
@@ -329,20 +331,20 @@ function _vanquish(state, playerId, vanquishedId, vanquisherIds, kvs) {
     }
 
     // check vanquished is on hero side
-    if (getCardSide(state, vanquishedId) != "hero") {
+    if (getCardSide(board, vanquishedId) != "hero") {
         throw new Error("The card to be vanquished is not on the hero side");
     }
 
     // check vanquishers are on the villain side
-    if (vanquisherIds.some((id) => getCardSide(state, id) != "villain")) {
+    if (vanquisherIds.some((id) => getCardSide(board, id) != "villain")) {
         throw new Error("The vanquishing cards must be on the villain side");
     }
 
     // check that all cards in the same location (except ones that can vanquish adjacent locations)
-    const vanquishLocationName = getCardLocation(state, vanquishedId)["name"];
+    const vanquishLocationName = getCardLocation(board, vanquishedId)["name"];
     if (
         vanquisherIds
-            .map((id) => getCardLocation(state, id)["name"])
+            .map((id) => getCardLocation(board, id)["name"])
             .some((locationName) => locationName != vanquishLocationName)
     ) {
         throw new Error("All vanquishers are not at the location of the card to be vanquished");
@@ -351,7 +353,7 @@ function _vanquish(state, playerId, vanquishedId, vanquisherIds, kvs) {
     // check all cards have a strength attribute
     if (
         allVanquishCardIds
-            .map((id) => getCardById(state, id))
+            .map((id) => getCardById(board, id))
             .filter((card) => card["card-type"] != "Vehicle")
             .some((card) => !card.hasOwnProperty("strength"))
     ) {
@@ -359,9 +361,9 @@ function _vanquish(state, playerId, vanquishedId, vanquisherIds, kvs) {
     }
 
     // check strength of allies and hero
-    const heroSideStrength = getCardStrength(state, vanquishedId);
+    const heroSideStrength = getCardStrength(board, vanquishedId);
     const villainSideStrength = vanquisherIds.reduce((acc, id) => {
-        return acc + getCardStrength(state, id);
+        return acc + getCardStrength(board, id);
     }, 0);
     if (villainSideStrength < heroSideStrength) {
         throw new Error(
@@ -369,7 +371,6 @@ function _vanquish(state, playerId, vanquishedId, vanquisherIds, kvs) {
         );
     }
 
-    const board = R.clone(state);
     const player = getPlayerById(board, playerId);
     const vanquishLocation = getLocationByName(board, playerId, vanquishLocationName);
 
@@ -446,6 +447,11 @@ function _discardCards(state, playerId, toDiscardCardsIds, kvs) {
 function _ambition(state, playerId, cardId, kvs) {
     const board = R.clone(state);
 
+    // check card belongs to player
+    if (getPlayerIdOfCardId(cardId) != playerId) {
+        throw new Error("Player does not own card");
+    }
+
     // only used in first else if
     const cardLocation = getCardLocation(board, cardId);
 
@@ -472,6 +478,10 @@ function _ambition(state, playerId, cardId, kvs) {
 
         return board;
     } else if (cardLocation != null) {
+        if (getCardSide(board, cardId) != "villain") {
+            throw new Error("Card must be on villain side");
+        }
+
         if (!card["ambition-abilities"]) {
             throw new Error("Card has no ambition abilities");
         }
